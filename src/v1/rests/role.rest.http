@@ -1,0 +1,16 @@
+@url = http://localhost:5000/api/v1/role
+
+### Get all role
+GET {{url}}/
+
+### Get all get-role-id-gte-5
+GET {{url}}/get-role-id-gte-5
+
+### Create role
+POST {{url}}
+Content-Type: application/json
+
+{
+  "name": "Quản trị viên 3",
+  "key": "ADMIN 3"
+}
