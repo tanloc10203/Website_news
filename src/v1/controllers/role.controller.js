@@ -11,6 +11,29 @@ class RoleController extends ParentController {
     this.#_service = _service;
   }
 
+  getAll = async (req, res, next) => {
+    try {
+      let { limit, page } = req.query;
+
+      if (!parseInt(limit) || !parseInt(page)) {
+        return next({
+          status: 400,
+          message: "Limit hoặc page không phải là chữ số !",
+        });
+      }
+
+      let response = await this.service.getAll({
+        limit: +limit,
+        page: +page,
+        selectField: "name key",
+      });
+
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getRoleIdGTE5 = async (req, res, next) => {
     try {
       const response = await this.#_service.getRoleIdGTE5();
@@ -32,7 +55,11 @@ class RoleController extends ParentController {
         });
       }
 
-      const response = await this.#_service.create(data);
+      const response = await this.#_service.create({
+        key: data.key,
+        name: data.name,
+      });
+
       res.status(response.status).json(response);
     } catch (error) {
       next(error);

@@ -2,6 +2,7 @@ const ParentService = require("./parent.service");
 
 class RoleService extends ParentService {
   superCreate = this.create;
+  superUpdate = this.update;
 
   getRoleIdGTE5 = async () => {
     return {
@@ -11,9 +12,9 @@ class RoleService extends ParentService {
   };
 
   // @override
-  create = async (data) => {
+  create = async ({ key, name }) => {
     const findKey = await this.model.findOne({
-      key: data.key,
+      key: key,
     });
 
     if (findKey) {
@@ -26,7 +27,7 @@ class RoleService extends ParentService {
     }
 
     const findName = await this.model.findOne({
-      name: data.name,
+      name: name,
     });
 
     if (findName) {
@@ -38,7 +39,46 @@ class RoleService extends ParentService {
       };
     }
 
-    const response = await this.superCreate(data);
+    const response = await this.superCreate({ key: key, name: name });
+
+    return response;
+  };
+
+  // @override
+  update = async ({ id, data }) => {
+    const findName = await this.model
+      .findOne({
+        name: data.name,
+      })
+      .exec();
+
+    if (findName && findName._id !== id) {
+      return {
+        errors: {
+          message: "Tên này tồn tại",
+        },
+        status: 200,
+        elements: null,
+      };
+    }
+
+    const findKey = await this.model
+      .findOne({
+        key: data.key,
+      })
+      .exec();
+
+    if (findKey && findKey._id !== id) {
+      return {
+        errors: {
+          message: "Key này tồn tại",
+        },
+        status: 200,
+        elements: null,
+      };
+    }
+
+    const response = await this.superUpdate({ id: id, data: data });
 
     return response;
   };

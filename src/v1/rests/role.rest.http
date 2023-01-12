@@ -1,7 +1,10 @@
 @url = http://localhost:5000/api/v1/role
 
 ### Get all role
-GET {{url}}/
+GET {{url}}?limit=2&page=1
+
+### Get by id
+GET {{url}}/63bfd7d4414c6a96d3b584fb
 
 ### Get all get-role-id-gte-5
 GET {{url}}/get-role-id-gte-5
@@ -11,6 +14,16 @@ POST {{url}}
 Content-Type: application/json
 
 {
-  "name": "Quản trị viên 3",
-  "key": "ADMIN 3"
+  "name": "Quản trị viên 7",
+  "key": "ADMIN 7"
+}
+
+
+### update role
+PATCH {{url}}/63bfd7d4414c6a96d3b584fb
+Content-Type: application/json
+
+{
+  "name": "Quản trị viên 31",
+  "key": "ADMIN 71"
 }
