@@ -1,5 +1,6 @@
 const { _User } = require("../models/user.model");
 const UserService = require("../services/user.service");
+const { typeOfObjectId } = require("../utils/functions");
 const ParentController = require("./parent.controller");
 
 class UserController extends ParentController {
@@ -7,6 +8,80 @@ class UserController extends ParentController {
     const service = new UserService(_User);
     super(service);
   }
+
+  create = async (req, res, next) => {
+    try {
+      const data = req.body;
+
+      if (!data.email || !data.password || !data.roleId) {
+        return next({
+          status: 400,
+          message: "Thiếu trường email hoặc password hoặc roleId",
+        });
+      }
+
+      const response = await this.service.create({
+        email: data.email,
+        password: data.password,
+        roleId: data.roleId,
+      });
+
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAll = async (req, res, next) => {
+    try {
+      let { limit, page } = req.query;
+
+      let response;
+
+      if (!limit && !page) {
+        response = await this.service.getAll({
+          limit: 0,
+          page: 0,
+        });
+      } else {
+        response = await this.service.getAll({
+          limit: +limit,
+          page: +page,
+          populate: { path: "roleId", select: "key name" },
+        });
+      }
+
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  changePassword = async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const password = req.body.password;
+
+      if (!typeOfObjectId(id + "")) {
+        return next({
+          status: 400,
+          message: "Id không hợp lệ",
+        });
+      }
+
+      if (!password) {
+        return next({
+          status: 400,
+          message: "Thiếu trường mật khẩu !",
+        });
+      }
+
+      const response = await this.service.changePassword({ id, password });
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = new UserController();

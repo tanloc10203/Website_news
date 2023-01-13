@@ -1,14 +1,18 @@
-const { _Role } = require("../models/role.model");
+const { typeOfObjectId } = require("../utils/functions");
 
 class ParentService {
   constructor(model) {
     this.model = model;
   }
 
-  getAll = ({ limit = 5, page = 1, selectField = "" }) => {
+  getAll = ({
+    limit = 5,
+    page = 1,
+    selectField = "",
+    populate = { path: "", select: "" },
+  }) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const skip = (page - 1) * limit;
         const _model = this.model;
 
         if (limit === 0 && page === 0) {
@@ -19,35 +23,15 @@ class ParentService {
           });
         }
 
-        await _model
-          .find({ is_delete: false })
-          .select(selectField)
-          .limit(limit)
-          .skip(skip)
-          .exec((error, response) => {
-            if (error) {
-              reject(error);
-            }
+        if (!populate.path && !populate.select) {
+          return resolve(
+            await this.#getAllNotPopulate({ limit, page, selectField })
+          );
+        }
 
-            _model.count().exec((error, count) => {
-              if (error) {
-                reject(error);
-              }
-
-              resolve({
-                elements: response,
-                errors: null,
-                status: 200,
-                meta: {
-                  pagination: {
-                    page,
-                    limit,
-                    totalRows: Math.ceil(count / limit),
-                  },
-                },
-              });
-            });
-          });
+        resolve(
+          await this.#getAllPopulate({ limit, page, selectField, populate })
+        );
       } catch (error) {
         reject(error);
       }
@@ -67,7 +51,7 @@ class ParentService {
   getById = (id) => {
     return new Promise(async (resolve, reject) => {
       try {
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        if (!typeOfObjectId(id + "")) {
           return resolve({
             errors: {
               message: "Id không đúng giá trị",
@@ -108,6 +92,15 @@ class ParentService {
           new: true,
         });
 
+        if (!response) {
+          return resolve({
+            errors: {
+              message: "Id không tồn tại",
+            },
+            status: 400,
+          });
+        }
+
         resolve({
           elements: response,
           status: 201,
@@ -147,6 +140,99 @@ class ParentService {
 
   deleteForce = async (id) => {
     return await this.delete({ id, isDelete: true });
+  };
+
+  /**
+   * Lấy dữ liệu không có ref
+   * @param {limit, page, selectField} param0
+   * @returns
+   */
+  #getAllNotPopulate = ({ limit, page, selectField }) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const _model = this.model;
+        const skip = (page - 1) * limit;
+
+        await _model
+          .find({ is_delete: false })
+          .select(selectField)
+          .limit(limit)
+          .skip(skip)
+          .exec((error, response) => {
+            if (error) {
+              reject(error);
+            }
+
+            _model.count().exec((error, count) => {
+              if (error) {
+                reject(error);
+              }
+
+              resolve({
+                elements: response,
+                errors: null,
+                status: 200,
+                meta: {
+                  pagination: {
+                    page,
+                    limit,
+                    totalRows: Math.ceil(count / limit),
+                  },
+                },
+              });
+            });
+          });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  /**
+   * Lấy dữ liệu có ref
+   * @param {limit, page, selecteField, populate} param0
+   * @returns
+   */
+  #getAllPopulate = ({ limit, page, selectField, populate }) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const _model = this.model;
+        const skip = (page - 1) * limit;
+
+        await _model
+          .find({ is_delete: false })
+          .select(selectField)
+          .populate(populate)
+          .limit(limit)
+          .skip(skip)
+          .exec((error, response) => {
+            if (error) {
+              reject(error);
+            }
+
+            _model.count().exec((error, count) => {
+              if (error) {
+                reject(error);
+              }
+
+              resolve({
+                elements: response,
+                errors: null,
+                status: 200,
+                meta: {
+                  pagination: {
+                    page,
+                    limit,
+                    totalRows: Math.ceil(count / limit),
+                  },
+                },
+              });
+            });
+          });
+      } catch (error) {
+        reject(error);
+      }
+    });
   };
 }
 

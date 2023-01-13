@@ -1,8 +1,38 @@
 @url = http://localhost:5000/api/v1/user
 
 ### Get all user
-GET {{url}}
+GET {{url}}?limit=10&page=1
 
+### GET BY ID
+GET {{url}}/63c106215d8d55f11402f5ba
 
 ### Create user
 POST {{url}}
+Content-Type: application/json
+
+{
+  "email": "ginga550504@gmail.com",
+  "password": "example1",
+  "roleId": "63bfd8f1837f98678aa6a02c"
+}
+
+### update user
+PATCH {{url}}/63c106215d8d55f11402f5ba
+Content-Type: application/json
+
+{
+  "email": "examplesdfsfds@gmail.com",
+  "roleId": "63bfd8f1837f98678aa6a02c",
+  "full_name": "Example 1"
+}
+
+### change password
+PATCH {{url}}/change-password/63c106215d8d55f11402f5ba
+Content-Type: application/json
+
+{
+  "password": "thikhung"
+}
+
+### delete user
+DELETE {{url}}/63c12b5aa8b1f87e2a4eff35?is_delete=true
