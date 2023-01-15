@@ -5,32 +5,51 @@ class ParentService {
     this.model = model;
   }
 
-  getAll = ({
-    limit = 5,
-    page = 1,
-    selectField = "",
-    populate = { path: "", select: "" },
-  }) => {
+  getAll = (filters = {}) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const _model = this.model;
+        const { limit, page, selectField, search, search_name, populate } =
+          filters;
 
-        if (limit === 0 && page === 0) {
+        if (search_name && search) {
+          return resolve(
+            await this.getAllAndFilterWithSearchCharector({
+              limit,
+              page,
+              selectField,
+              search,
+              search_name,
+            })
+          );
+        }
+
+        if (search) {
+          return resolve(
+            await this.getAllAndFilerWithSearchFullText({
+              limit,
+              page,
+              selectField,
+              search,
+            })
+          );
+        }
+
+        if (!limit && !page) {
           return resolve({
-            elements: await _model.find(),
+            elements: await this.getAllNotParams(selectField),
             errors: null,
             status: 200,
           });
         }
 
-        if (!populate.path && !populate.select) {
+        if (!populate) {
           return resolve(
-            await this.#getAllNotPopulate({ limit, page, selectField })
+            await this.getAllWithoutPopulate({ limit, page, selectField })
           );
         }
 
         resolve(
-          await this.#getAllPopulate({ limit, page, selectField, populate })
+          await this.getAllWithPopulate({ limit, page, selectField, populate })
         );
       } catch (error) {
         reject(error);
@@ -87,10 +106,14 @@ class ParentService {
   update = async ({ id, data }) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const response = await this.model.findOneAndUpdate({ _id: id }, data, {
-          upsert: false,
-          new: true,
-        });
+        const response = await this.model.findOneAndUpdate(
+          { _id: id },
+          { $set: data },
+          {
+            upsert: false,
+            new: true,
+          }
+        );
 
         if (!response) {
           return resolve({
@@ -147,7 +170,7 @@ class ParentService {
    * @param {limit, page, selectField} param0
    * @returns
    */
-  #getAllNotPopulate = ({ limit, page, selectField }) => {
+  getAllWithoutPopulate = ({ limit, page, selectField }) => {
     return new Promise(async (resolve, reject) => {
       try {
         const _model = this.model;
@@ -163,7 +186,7 @@ class ParentService {
               reject(error);
             }
 
-            _model.count().exec((error, count) => {
+            _model.count({ is_delete: false }).exec((error, count) => {
               if (error) {
                 reject(error);
               }
@@ -193,7 +216,7 @@ class ParentService {
    * @param {limit, page, selecteField, populate} param0
    * @returns
    */
-  #getAllPopulate = ({ limit, page, selectField, populate }) => {
+  getAllWithPopulate = ({ limit, page, selectField, populate }) => {
     return new Promise(async (resolve, reject) => {
       try {
         const _model = this.model;
@@ -210,7 +233,7 @@ class ParentService {
               reject(error);
             }
 
-            _model.count().exec((error, count) => {
+            _model.count({ is_delete: false }).exec((error, count) => {
               if (error) {
                 reject(error);
               }
@@ -233,6 +256,127 @@ class ParentService {
         reject(error);
       }
     });
+  };
+
+  /**
+   * Lấy dữ liệu có filter và tìm kiếm bằng full text
+   * @param {*} param0
+   * @returns
+   */
+  getAllAndFilerWithSearchFullText = ({ limit, page, selectField, search }) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const _model = this.model;
+        const skip = (page - 1) * limit;
+
+        await _model
+          .find(
+            { is_delete: false, $text: { $search: search } },
+            { score: { $meta: "textScore" } }
+          )
+          .sort({ score: { $meta: "textScore" } })
+          .select(selectField)
+          .limit(limit)
+          .skip(skip)
+          .exec((error, response) => {
+            if (error) {
+              reject(error);
+            }
+
+            _model
+              .count({ is_delete: false, $text: { $search: search } })
+              .exec((error, count) => {
+                if (error) {
+                  reject(error);
+                }
+
+                resolve({
+                  elements: response,
+                  errors: null,
+                  status: 200,
+                  meta: {
+                    pagination: {
+                      page,
+                      limit,
+                      totalRows: Math.ceil(count / limit),
+                    },
+                  },
+                });
+              });
+          });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  /**
+   * Lấy dữ liệu có filter và tìm kiếm theo trường bằng kí tự
+   * @param {*} param0
+   * @returns
+   */
+  getAllAndFilterWithSearchCharector = ({
+    limit,
+    page,
+    selectField,
+    search_name,
+    search,
+  }) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const _model = this.model;
+        const skip = (page - 1) * limit;
+
+        await _model
+          .find({
+            is_delete: false,
+            [search_name]: { $regex: search, $options: "i" },
+          })
+          .select(selectField)
+          .limit(limit)
+          .skip(skip)
+          .exec((error, response) => {
+            if (error) {
+              reject(error);
+            }
+
+            _model
+              .count({
+                is_delete: false,
+                [search_name]: { $regex: search, $options: "i" },
+              })
+              .exec((error, count) => {
+                if (error) {
+                  reject(error);
+                }
+
+                resolve({
+                  elements: response,
+                  errors: null,
+                  status: 200,
+                  meta: {
+                    pagination: {
+                      page,
+                      limit,
+                      totalRows: Math.ceil(count / limit),
+                    },
+                  },
+                });
+              });
+          });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  /**
+   * Lấy tất cả dữ liệu
+   * @param {*} selectField
+   * @returns
+   */
+  getAllNotParams = async (selectField) => {
+    return await this.model.find().select(selectField);
   };
 }
 

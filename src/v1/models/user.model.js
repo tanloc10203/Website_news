@@ -58,4 +58,6 @@ UserSchema.statics.comparePassword = async (passwordInput, hashPassword) => {
   return await bcrypt.compare(passwordInput, hashPassword);
 };
 
+UserSchema.index({ email: "text", full_name: "text" });
+
 module.exports._User = model("users", UserSchema);

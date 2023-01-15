@@ -1,12 +1,11 @@
 const ParentService = require("./parent.service");
 const { typeOfObjectId } = require("../utils/functions");
-const { validateEmail } = require("./email.service");
 
 class UserService extends ParentService {
   superCreate = this.create;
   superUpdate = this.update;
 
-  create = ({ email, roleId, password }) => {
+  create = ({ email, password }) => {
     return new Promise(async (resolve, reject) => {
       try {
         const findEmail = await this.model.findOne({ email }).exec();
@@ -20,20 +19,10 @@ class UserService extends ParentService {
           });
         }
 
-        if (!typeOfObjectId(roleId + "")) {
-          return resolve({
-            errors: {
-              message: "RoleId không hợp lệ",
-            },
-            status: 400,
-          });
-        }
-
         const hashPassword = await this.model.hashPassword(password);
 
         const response = await this.superCreate({
           email,
-          roleId,
           password: hashPassword,
         });
 

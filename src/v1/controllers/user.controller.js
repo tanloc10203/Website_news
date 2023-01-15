@@ -13,17 +13,16 @@ class UserController extends ParentController {
     try {
       const data = req.body;
 
-      if (!data.email || !data.password || !data.roleId) {
+      if (!data.email || !data.password) {
         return next({
           status: 400,
-          message: "Thiếu trường email hoặc password hoặc roleId",
+          message: "Thiếu trường email hoặc password",
         });
       }
 
       const response = await this.service.create({
         email: data.email,
         password: data.password,
-        roleId: data.roleId,
       });
 
       res.status(response.status).json(response);
@@ -34,20 +33,36 @@ class UserController extends ParentController {
 
   getAll = async (req, res, next) => {
     try {
-      let { limit, page } = req.query;
+      let { limit, page, search, search_name, sort } = req.query;
+      const selectField = "role is_verified email full_name image";
 
       let response;
 
       if (!limit && !page) {
         response = await this.service.getAll({
-          limit: 0,
-          page: 0,
+          selectField,
         });
-      } else {
+      } else if (search && search_name) {
+        response = await this.service.getAll({
+          search,
+          search_name,
+          limit: +limit,
+          page: +page,
+          selectField,
+        });
+      } else if (search) {
+        response = await this.service.getAll({
+          search,
+          limit: +limit,
+          page: +page,
+          selectField,
+        });
+      } else if (sort) {
         response = await this.service.getAll({
           limit: +limit,
           page: +page,
-          populate: { path: "roleId", select: "key name" },
+          selectField,
+          sort,
         });
       }
 
