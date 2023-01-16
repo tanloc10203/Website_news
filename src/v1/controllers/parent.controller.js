@@ -5,16 +5,8 @@ class ParentController {
 
   getAll = async (req, res, next) => {
     try {
-      let { limit, page } = req.query;
-
-      let response;
-
-      if (!limit && !page) {
-        response = await this.service.getAll({ limit: 0, page: 0 });
-      } else {
-        response = await this.service.getAll({ limit: +limit, page: +page });
-      }
-
+      const filters = req.query;
+      const response = await this.service.getAll(filters);
       res.status(response.status).json(response);
     } catch (error) {
       next(error);

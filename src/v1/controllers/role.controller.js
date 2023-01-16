@@ -10,17 +10,9 @@ class RoleController extends ParentController {
 
   getAll = async (req, res, next) => {
     try {
-      let { limit, page } = req.query;
-
-      if (!parseInt(limit) || !parseInt(page)) {
-        return next({
-          status: 400,
-          message: "Limit hoặc page không phải là chữ số !",
-        });
-      }
-
       let response = await this.service.getAll({
         selectField: "name key",
+        ...req.query,
       });
 
       res.status(response.status).json(response);

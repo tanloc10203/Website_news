@@ -33,39 +33,8 @@ class UserController extends ParentController {
 
   getAll = async (req, res, next) => {
     try {
-      let { limit, page, search, search_name, sort } = req.query;
       const selectField = "role is_verified email full_name image";
-
-      let response;
-
-      if (!limit && !page) {
-        response = await this.service.getAll({
-          selectField,
-        });
-      } else if (search && search_name) {
-        response = await this.service.getAll({
-          search,
-          search_name,
-          limit: +limit,
-          page: +page,
-          selectField,
-        });
-      } else if (search) {
-        response = await this.service.getAll({
-          search,
-          limit: +limit,
-          page: +page,
-          selectField,
-        });
-      } else if (sort) {
-        response = await this.service.getAll({
-          limit: +limit,
-          page: +page,
-          selectField,
-          sort,
-        });
-      }
-
+      const response = await this.service.getAll({ selectField, ...req.query });
       res.status(response.status).json(response);
     } catch (error) {
       next(error);
