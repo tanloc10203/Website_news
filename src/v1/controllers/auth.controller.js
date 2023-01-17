@@ -68,6 +68,22 @@ class AuthController extends ParentController {
     }
   };
 
+  signOut = async (req, res, next) => {
+    try {
+      res.clearCookie("refreshToken");
+      res.status(200).json({
+        errors: null,
+        elements: null,
+        status: 200,
+        meta: {
+          message: "Đăng xuất thành công",
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   verifyAccount = async (req, res, next) => {
     try {
       const { email } = req.params;
