@@ -11,3 +11,28 @@ Content-Type: application/json
 
 ### Verify account
 GET {{url}}/verify/ginga550505@gmail.com?token=$2b$10$AX2DICjg1wH8UYA2781tDOhhhcNwfPXUbmQaHakQ/KYtlUtSgmdR2
+
+### sign in
+POST {{url}}/sign-in
+Content-Type: application/json
+
+{
+  "email": "ginga550505@gmail.com",
+  "password": "ginga55055"
+}
+
+### Forgot password
+POST {{url}}/forgot-password
+Content-Type: application/json
+
+{
+  "email": "ginga550505@gmail.com"
+}
+
+### Change password
+POST {{url}}/forgot-password/ginga550505@gmail.com?token=$2b$10$rnlQb1Elf24MHica7L5EH.jIxToPZkXyS7AzQq3dEQBVJxyY4c1Qi
+Content-Type: application/json
+
+{
+  "password": "ginga55055"
+}

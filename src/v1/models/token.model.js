@@ -19,7 +19,7 @@ const TokenSchema = new Schema(
     expire_at: {
       type: Date,
       default: Date.now,
-      expires: 60,
+      // expires: 3,
     },
   },
   {
@@ -35,5 +35,7 @@ TokenSchema.statics.hashToken = async (token) => {
 TokenSchema.statics.compareToken = async (tokenInput, hashToken) => {
   return await bcrypt.compare(tokenInput, hashToken);
 };
+
+TokenSchema.index("expire_at", { expireAfterSeconds: 10 });
 
 module.exports._Token = model("tokens", TokenSchema);

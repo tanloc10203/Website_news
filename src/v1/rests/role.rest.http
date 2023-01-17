@@ -1,7 +1,7 @@
 @url = http://localhost:5000/api/v1/role
 
 ### Get all role
-GET {{url}}?limit=10&page=1
+GET {{url}}?limit=5&page=1&sort=name,desc&search=2&field=name
 
 ### Get by id
 GET {{url}}/63bfd7d4414c6a96d3b584fb
