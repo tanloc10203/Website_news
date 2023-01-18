@@ -62,7 +62,7 @@
   >   Tiếp theo chúng ta sẽ thực hiện phân trang với câu lệnh
 
 ```php
-const skip = (page - 1) * limit
+const skip = (page - 1) * limit;
 
 const data = model.find().skip(skip).limit(limit);
 
