@@ -138,6 +138,51 @@ class AuthController extends ParentController {
       next(error);
     }
   };
+
+  getCurrentUser = async (req, res, next) => {
+    try {
+      const user = req.user;
+      res.status(200).json({
+        errors: null,
+        elements: user,
+        status: 200,
+        meta: {
+          message: "Lấy thông tin đăng nhập thành công.",
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  refreshToken = async (req, res, next) => {
+    try {
+      const refreshToken = req.cookies.refreshToken;
+
+      if (!refreshToken) {
+        return next({
+          status: 401,
+          message: "Vui lòng đăng nhập lại",
+        });
+      }
+
+      const response = await this.service.refreshToken({
+        token: refreshToken,
+      });
+
+      if (response.elements && response.elements.refreshToken) {
+        res.cookie(
+          "refreshToken",
+          response.elements.refreshToken,
+          refreshTokenCookieOptions
+        );
+      }
+
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = new AuthController();

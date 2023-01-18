@@ -118,7 +118,7 @@ class AuthService extends ParentService {
           { user: others },
           PRIVATE_KEY_ACCESS_TOKEN,
           {
-            expiresIn: "15m",
+            expiresIn: "20s",
           }
         );
 
@@ -306,6 +306,61 @@ class AuthService extends ParentService {
           errors: null,
           meta: {
             message: "Thay đổi mật khẩu thành công.",
+          },
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  refreshToken = ({ token }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const { decoded, valid, errors } = jwtService.verify(
+          token,
+          PRIVATE_KEY_REFRESH_TOKEN
+        );
+
+        if (!valid && errors) {
+          if (errors.message === "jwt expired") {
+            return resolve({
+              status: 401,
+              message: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+            });
+          } else {
+            return resolve({
+              status: 401,
+              message: errors.message,
+            });
+          }
+        }
+
+        const accessToken = jwtService.sign(
+          { user: decoded?.user },
+          PRIVATE_KEY_ACCESS_TOKEN,
+          {
+            expiresIn: "20s",
+          }
+        );
+
+        const refreshToken = jwtService.sign(
+          { user: decoded?.user },
+          PRIVATE_KEY_REFRESH_TOKEN,
+          {
+            expiresIn: "1w",
+          }
+        );
+
+        resolve({
+          errors: null,
+          elements: {
+            accessToken,
+            refreshToken,
+          },
+          status: 200,
+          meta: {
+            message: "Tạo lại key đăng nhập thành công.",
           },
         });
       } catch (error) {

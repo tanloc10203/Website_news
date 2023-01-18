@@ -10,14 +10,13 @@ module.exports.jwtService = {
       const decoded = jwt.verify(token, privateKey);
       return {
         valid: true,
-        expired: false,
         decoded,
+        errors: null,
       };
     } catch (e) {
-      console.error(e);
       return {
         valid: false,
-        expired: e.message === "jwt expired",
+        errors: e,
         decoded: null,
       };
     }

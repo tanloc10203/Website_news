@@ -36,3 +36,11 @@ Content-Type: application/json
 {
   "password": "ginga55055"
 }
+
+
+### Get current user
+GET {{url}}/sign-in
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjYzYzNkYzk5MDU3MDhmMjU1Y2E0ODQ5ZSIsImVtYWlsIjoiZ2luZ2E1NTA1MDVAZ21haWwuY29tIiwiZnVsbF9uYW1lIjoiIiwicm9sZSI6IlVTRVIiLCJpbWFnZSI6IiIsImlzX3ZlcmlmaWVkIjp0cnVlfSwiaWF0IjoxNjc0MDAwMzg0LCJleHAiOjE2NzQwMDA0MDR9.e_C-DQQnNM6DKMfVvpQYnCKIZI_OjZhuxOBNgKrcrOM
+
+### Refresh Token
+GET {{url}}/refresh-token

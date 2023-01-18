@@ -6,7 +6,6 @@ function errorHandleMiddleware(app) {
   });
 
   app.use((error, req, res, next) => {
-    console.log(error);
     res.status(error.status || 500).json({
       status: error.status || 500,
       errors: {
