@@ -16,6 +16,7 @@
 
 2. Tokens: Lưu token của user khi gửi mail để xác thực hoặc thay đổi mật khẩu
 
+-
 - user_id
 - token
 - expire_at: {
