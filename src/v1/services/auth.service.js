@@ -11,6 +11,8 @@ const {
 
 const PRIVATE_KEY_ACCESS_TOKEN = process.env.PRIVATE_KEY_ACCESS_TOKEN;
 const PRIVATE_KEY_REFRESH_TOKEN = process.env.PRIVATE_KEY_REFRESH_TOKEN;
+const EXPIRED_ACCESS_TOKEN = process.env.EXPIRED_ACCESS_TOKEN;
+const EXPIRED_REFRESH_TOKEN = process.env.EXPIRED_REFRESH_TOKEN;
 
 class AuthService extends ParentService {
   signUp = ({ email, password }) => {
@@ -118,7 +120,7 @@ class AuthService extends ParentService {
           { user: others },
           PRIVATE_KEY_ACCESS_TOKEN,
           {
-            expiresIn: "20s",
+            expiresIn: EXPIRED_ACCESS_TOKEN || "20s",
           }
         );
 
@@ -126,7 +128,7 @@ class AuthService extends ParentService {
           { user: others },
           PRIVATE_KEY_REFRESH_TOKEN,
           {
-            expiresIn: "1w",
+            expiresIn: EXPIRED_REFRESH_TOKEN || "1w",
           }
         );
 
@@ -340,7 +342,7 @@ class AuthService extends ParentService {
           { user: decoded?.user },
           PRIVATE_KEY_ACCESS_TOKEN,
           {
-            expiresIn: "20s",
+            expiresIn: EXPIRED_ACCESS_TOKEN || "20s",
           }
         );
 
@@ -348,7 +350,7 @@ class AuthService extends ParentService {
           { user: decoded?.user },
           PRIVATE_KEY_REFRESH_TOKEN,
           {
-            expiresIn: "1w",
+            expiresIn: EXPIRED_REFRESH_TOKEN || "1w",
           }
         );
 
