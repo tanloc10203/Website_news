@@ -17,10 +17,6 @@ const UserSchema = new Schema(
       default: "",
       index: true,
     },
-    key_change_password: {
-      type: String,
-      default: "",
-    },
     role: {
       type: String,
       enum: ["ADMIN", "USER"],

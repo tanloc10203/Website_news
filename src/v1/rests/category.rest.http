@@ -1,0 +1,23 @@
+@url = http://localhost:5000/api/v1/category
+
+### Create category
+POST {{url}}
+Content-Type: application/json
+
+{
+  "name": "Blockchain",
+  "slug": "blockchain",
+  "level": 2,
+  "parentId": "63c77e88fd184aee681064ac"
+}
+
+### Get all
+GET {{url}}
+
+
+### Get by id
+GET {{url}}/63c77e88fd184aee681064ac
+
+
+### Delete 
+DELETE  {{url}}/63c77bb0a0982f25e962274b?is_delete=true

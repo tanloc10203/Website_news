@@ -12,10 +12,11 @@ class CategoryController extends ParentController {
     try {
       const data = req.body;
 
-      if (!data.name || !data.slug || !data.level || !data.parentId) {
+      console.log("check data:::", data);
+
+      if (!data.name || !data.slug) {
         return next({
-          message:
-            "Tên danh mục hoặc slug hoặc level hoặc parentId là những trường bắt buộc !",
+          message: "Tên danh mục hoặc slug là trường bắt buộc !",
           status: 400,
         });
       }

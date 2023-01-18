@@ -1,4 +1,8 @@
-const { Schema, model } = require("mongoose");
+const {
+  Schema,
+  model,
+  Types: { ObjectId },
+} = require("mongoose");
 
 const CategorySchema = new Schema(
   {
@@ -16,8 +20,19 @@ const CategorySchema = new Schema(
       default: 1,
     },
     parent_id: {
-      type: Number,
-      default: 0,
+      type: ObjectId,
+      default: null,
+    },
+    childrens: {
+      type: [
+        {
+          _id: ObjectId,
+          name: String,
+          slug: String,
+          childrens: [Object],
+        },
+      ],
+      default: [],
     },
     image: {
       type: String,
