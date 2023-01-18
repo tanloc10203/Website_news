@@ -22,17 +22,7 @@ const CategorySchema = new Schema(
     parent_id: {
       type: ObjectId,
       default: null,
-    },
-    childrens: {
-      type: [
-        {
-          _id: ObjectId,
-          name: String,
-          slug: String,
-          childrens: [Object],
-        },
-      ],
-      default: [],
+      ref: "categories",
     },
     image: {
       type: String,

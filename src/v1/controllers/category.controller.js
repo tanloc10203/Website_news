@@ -12,8 +12,6 @@ class CategoryController extends ParentController {
     try {
       const data = req.body;
 
-      console.log("check data:::", data);
-
       if (!data.name || !data.slug) {
         return next({
           message: "Tên danh mục hoặc slug là trường bắt buộc !",
@@ -22,6 +20,15 @@ class CategoryController extends ParentController {
       }
 
       const response = await this.service.create(data);
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getByParentId = async (req, res, next) => {
+    try {
+      const response = await this.service.getByParentId(req.params.id);
       res.status(response.status).json(response);
     } catch (error) {
       next(error);

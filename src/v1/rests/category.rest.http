@@ -5,10 +5,10 @@ POST {{url}}
 Content-Type: application/json
 
 {
-  "name": "Blockchain",
-  "slug": "blockchain",
+  "name": "Bất động sản",
+  "slug": "bat-dong-san",
   "level": 2,
-  "parentId": "63c77e88fd184aee681064ac"
+  "parent_id": "63c7e0ed519fd00e0f6358b3"
 }
 
 ### Get all
@@ -16,8 +16,21 @@ GET {{url}}
 
 
 ### Get by id
-GET {{url}}/63c77e88fd184aee681064ac
+GET {{url}}/63c7e0b6aea29d67a31ef694
+
+
+### Get by parent id
+GET {{url}}/parent/63c7d939855f5cfe24a43bf7
 
 
 ### Delete 
-DELETE  {{url}}/63c77bb0a0982f25e962274b?is_delete=true
+DELETE  {{url}}/63c7e0b6aea29d67a31ef694?is_delete=true
+
+### Update
+PATCH {{url}}/63c7e0b6aea29d67a31ef694
+Content-Type: application/json
+
+{
+  "name": "Công nghệ",
+  "level": 4
+}

@@ -1,0 +1,36 @@
+@url = http://localhost:5000/api/v1/post
+
+### Get all post
+GET {{url}}
+
+### Get by id
+GET {{url}}/63c7f290f6f55822483ed50e
+
+### Create post
+POST {{url}}
+Content-Type: application/json
+
+{
+  "title": "Test title 2",
+  "slug": "test-title 2",
+  "detail_text": "text detail test 2",
+  "detail_html": "text detail html 2",
+  "categoryId": "63c7d97f855f5cfe24a43bfb",
+  "userId": "63c106215d8d55f11402f5ba"
+}
+
+
+### update role
+PATCH {{url}}/63c7f267f6f55822483ed509
+Content-Type: application/json
+
+{
+  "title": "Test title update",
+  "key": "ADMIN 2"
+}
+
+### Delete role
+DELETE  {{url}}/63c7f290f6f55822483ed50e?is_delete=false
+
+### Delete vĩnh viễn role
+DELETE  {{url}}/force/63bfd7d4414c6a96d3b584fb
