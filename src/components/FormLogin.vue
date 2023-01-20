@@ -1,35 +1,45 @@
 <script setup>
 import { ref } from "vue";
 import authApi from "../api/authApi";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
 
 const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 const loading = ref(false);
-
 const emailRules = [(v) => /.+@.+\..+/.test(v) || "E-mail không hợp lệ"];
 
-async function handleSubmit() {
-  console.log({ email: email.value, password: password.value });
+const store = useStore();
+const router = useRouter();
 
-  const data = {
-    email: email.value,
-    password: password.value,
-  };
+function handleSubmit() {
+  return new Promise(async (resolve, reject) => {
+    const data = {
+      email: email.value,
+      password: password.value,
+    };
 
-  try {
-    const response = await authApi.signIn(data);
-    console.log("check response login:::", response);
-  } catch (error) {
-    if (
-      error &&
-      error.response &&
-      error.response.data &&
-      error.response.data.errors
-    )
-      errorMessage.value = error.response.data.errors.message;
-    throw new Error(error.message);
-  }
+    try {
+      const response = await authApi.signIn(data);
+      if (response.elements) {
+        // * Lưu accessToken vào store
+        store.dispatch("auth/saveAccessToken", response.elements.accessToken);
+
+        // * Chuyển hướng tới trang dashboard
+        router.push("/manager/dashboard");
+      }
+    } catch (error) {
+      if (
+        error &&
+        error.response &&
+        error.response.data &&
+        error.response.data.errors
+      )
+        errorMessage.value = error.response.data.errors.message;
+      reject(error);
+    }
+  });
 }
 </script>
 

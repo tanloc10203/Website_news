@@ -1,24 +1,37 @@
-const state = {
-  accessToken: localStorage.setItem("accessToken") || "",
-};
+const state = () => ({
+  accessToken: localStorage.getItem("accessToken") || "",
+  user: {},
+});
 
 const mutations = {
-  saveAccessToken: ({ commit }, accessToken) => {
-    localStorage.setItem("accessToken", accessToken);
-    commit();
-  },
-};
-const actions = {
-  setAccessToken: ({ state }, accessToken) => {
+  setAccessToken: (state, accessToken) => {
     state.accessToken = accessToken;
   },
+  setUser: (state, user) => {
+    state.user = user;
+  },
 };
-const getters = {};
+
+const actions = {
+  saveAccessToken: ({ commit }, accessToken) => {
+    localStorage.setItem("accessToken", accessToken);
+    commit("setAccessToken", accessToken);
+  },
+
+  saveUser: ({ commit }, user) => {
+    commit("setUser", user);
+  },
+
+  remove: ({ commit }) => {
+    localStorage.removeItem("accessToken");
+    commit("setUser", {});
+    commit("setAccessToken", "");
+  },
+};
 
 export default {
   namespaced: true,
   state,
   mutations,
   actions,
-  getters,
 };
