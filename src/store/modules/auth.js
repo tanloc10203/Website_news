@@ -1,3 +1,5 @@
+import authApi from "@/api/authApi";
+
 const state = () => ({
   accessToken: localStorage.getItem("accessToken") || "",
   user: {},
@@ -22,10 +24,31 @@ const actions = {
     commit("setUser", user);
   },
 
+  getCurrentUserLogin: async ({ commit, state }) => {
+    try {
+      if (state.accessToken) {
+        const response = await authApi.getCurrentUser(state.accessToken);
+
+        if (response.elements) {
+          commit("setUser", response.elements);
+        }
+      }
+    } catch (error) {
+      console.log("error getCurrentUserLogin:::", error);
+      throw new Error(error.message);
+    }
+  },
+
   remove: ({ commit }) => {
     localStorage.removeItem("accessToken");
     commit("setUser", {});
     commit("setAccessToken", "");
+  },
+};
+
+const getters = {
+  isLoggedIn: (state) => {
+    return state.accessToken !== "" ? true : false;
   },
 };
 
@@ -34,4 +57,5 @@ export default {
   state,
   mutations,
   actions,
+  getters,
 };

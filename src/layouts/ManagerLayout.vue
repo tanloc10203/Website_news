@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import authApi from "../api/authApi";
 
@@ -8,28 +9,28 @@ const links = ref([
   ["mdi-inbox-arrow-down", "Dashboard", "/manager/dashboard"],
   ["mdi-send", "Category", "/manager/category"],
 ]);
+
 const store = useStore();
+const router = useRouter();
+
 const user = computed(() =>
   Object.keys(store.state.auth.user).length === 0 ? null : store.state.auth.user
 );
 
-const getCurrentUserLogin = async () => {
+store.dispatch("auth/getCurrentUserLogin");
+
+const handleLogout = async () => {
   try {
-    if (store.state.auth.accessToken) {
-      const response = await authApi.getCurrentUser(
-        store.state.auth.accessToken
-      );
-      if (response.elements) {
-        store.dispatch("auth/saveUser", response.elements);
-      }
+    const response = await authApi.signOut();
+    if (response) {
+      store.dispatch("auth/remove");
+      router.push("/login");
     }
   } catch (error) {
-    console.log("error getCurrentUserLogin:::", error);
+    console.log("error handleLogout:::", error);
     throw new Error(error.message);
   }
 };
-
-getCurrentUserLogin();
 </script>
 
 <template>
@@ -38,6 +39,8 @@ getCurrentUserLogin();
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title>Hello, {{ user && user.email }}</v-toolbar-title>
+
+      <v-btn variant="flat" @click="handleLogout">Đăng xuất</v-btn>
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer" temporary>
