@@ -4,6 +4,7 @@ import NotFoundView from "../views/NotFoundView.vue";
 import AboutView from "../views/AboutView.vue";
 import Dashboard from "../pages/manager/Dashboard.vue";
 import Category from "../pages/manager/Category.vue";
+import FormLogin from "../components/FormLogin.vue";
 
 const routes = [
   {
@@ -19,6 +20,7 @@ const routes = [
   {
     path: "/login",
     name: "login",
+    component: FormLogin,
     meta: {
       layout: "LoginLayout",
     },
