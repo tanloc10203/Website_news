@@ -9,7 +9,7 @@ const links = ref([
   ["mdi-inbox-arrow-down", "Dashboard", "/manager/dashboard"],
   ["mdi-send", "Category", "/manager/category"],
 ]);
-
+const theme = ref(localStorage.getItem("theme") || "light");
 const store = useStore();
 const router = useRouter();
 
@@ -40,15 +40,28 @@ const handleLogout = async () => {
     throw new Error(error.message);
   }
 };
+
+function onClick() {
+  theme.value = theme.value === "light" ? "dark" : "light";
+  localStorage.setItem("theme", theme.value);
+}
 </script>
 
 <template>
-  <v-app id="inspire">
+  <v-app :theme="theme">
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
       <v-toolbar-title>Hello, {{ user && user.email }}</v-toolbar-title>
 
+      <v-btn
+        :prepend-icon="
+          theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'
+        "
+        @click="onClick"
+      >
+        Toggle Theme
+      </v-btn>
       <v-btn variant="flat" @click="handleLogout">Đăng xuất</v-btn>
     </v-app-bar>
 
@@ -64,7 +77,7 @@ const handleLogout = async () => {
       </v-list-item>
     </v-navigation-drawer>
 
-    <v-main class="bg-grey-lighten-2">
+    <v-main>
       <v-container>
         <slot />
       </v-container>

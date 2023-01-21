@@ -1,27 +1,24 @@
-import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
-import NotFoundView from "../views/NotFoundView.vue";
-import AboutView from "../views/AboutView.vue";
-import Dashboard from "../pages/manager/Dashboard.vue";
-import Category from "../pages/manager/Category.vue";
-import FormLogin from "../components/FormLogin.vue";
 import store from "@/store";
+import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
   {
     path: "/",
     name: "home",
-    component: HomeView,
+    component: () =>
+      import(/* webpackChunkName: "HomView" */ "../views/HomeView.vue"),
   },
   {
     path: "/about",
     name: "about",
-    component: AboutView,
+    component: () =>
+      import(/* webpackChunkName: "AboutView" */ "../views/AboutView.vue"),
   },
   {
     path: "/login",
     name: "login",
-    component: FormLogin,
+    component: () =>
+      import(/* webpackChunkName: "FormLogin" */ "../components/FormLogin.vue"),
     meta: {
       layout: "LoginLayout",
     },
@@ -34,7 +31,10 @@ const routes = [
       {
         path: "dashboard",
         name: "dashboard",
-        component: Dashboard,
+        component: () =>
+          import(
+            /* webpackChunkName: "Dashboard" */ "../pages/manager/Dashboard.vue"
+          ),
         meta: {
           layout: "ManagerLayout",
           auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
@@ -42,19 +42,54 @@ const routes = [
       },
       {
         path: "category",
-        name: "category",
-        component: Category,
-        meta: {
-          layout: "ManagerLayout",
-          auth: true,
-        },
+        children: [
+          {
+            path: "",
+            name: "category",
+            component: () =>
+              import(
+                /* webpackChunkName: "Category" */ "../pages/manager/Category/Category.vue"
+              ),
+            meta: {
+              layout: "ManagerLayout",
+              auth: true,
+            },
+          },
+          {
+            path: "add",
+            name: "add-category",
+            component: () =>
+              import(
+                /* webpackChunkName: "Dashboard" */ "../pages/manager/Category/CategoryAddEdit.vue"
+              ),
+            meta: {
+              layout: "ManagerLayout",
+              auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
+            },
+          },
+          {
+            path: "update/:categoryId",
+            name: "update-category",
+            component: () =>
+              import(
+                /* webpackChunkName: "Dashboard" */ "../pages/manager/Category/CategoryAddEdit.vue"
+              ),
+            meta: {
+              layout: "ManagerLayout",
+              auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
+            },
+          },
+        ],
       },
     ],
   },
   {
     path: "/404",
     name: "notfound",
-    component: NotFoundView,
+    component: () =>
+      import(
+        /* webpackChunkName: "NotFoundView" */ "../views/NotFoundView.vue"
+      ),
     meta: {
       layout: "NotFoundLayout",
     },
