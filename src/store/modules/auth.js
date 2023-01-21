@@ -24,19 +24,22 @@ const actions = {
     commit("setUser", user);
   },
 
-  getCurrentUserLogin: async ({ commit, state }) => {
-    try {
-      if (state.accessToken) {
-        const response = await authApi.getCurrentUser(state.accessToken);
+  getCurrentUserLogin: ({ commit, state }) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (state.accessToken) {
+          const response = await authApi.getCurrentUser(state.accessToken);
 
-        if (response.elements) {
-          commit("setUser", response.elements);
+          if (response.elements) {
+            commit("setUser", response.elements);
+            resolve();
+          }
         }
+      } catch (error) {
+        console.log("error getCurrentUserLogin:::", error);
+        reject(error);
       }
-    } catch (error) {
-      console.log("error getCurrentUserLogin:::", error);
-      throw new Error(error.message);
-    }
+    });
   },
 
   remove: ({ commit }) => {

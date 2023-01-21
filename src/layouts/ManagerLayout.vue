@@ -17,7 +17,16 @@ const user = computed(() =>
   Object.keys(store.state.auth.user).length === 0 ? null : store.state.auth.user
 );
 
-store.dispatch("auth/getCurrentUserLogin");
+store.dispatch("auth/getCurrentUserLogin").catch(async (error) => {
+  if (
+    error.response &&
+    error.response.data &&
+    error.response.data.errors &&
+    error.response.data.errors.message !== "jwt expired"
+  ) {
+    await handleLogout();
+  }
+});
 
 const handleLogout = async () => {
   try {
