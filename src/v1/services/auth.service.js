@@ -328,7 +328,10 @@ class AuthService extends ParentService {
           if (errors.message === "jwt expired") {
             return resolve({
               status: 401,
-              message: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+              errors: {
+                message: "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
+                name: "jwt expired",
+              },
             });
           } else {
             return resolve({
