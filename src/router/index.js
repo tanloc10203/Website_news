@@ -60,7 +60,7 @@ const routes = [
             name: "add-category",
             component: () =>
               import(
-                /* webpackChunkName: "Dashboard" */ "../pages/manager/Category/CategoryAddEdit.vue"
+                /* webpackChunkName: "AddCategory" */ "../pages/manager/Category/CategoryAddEdit.vue"
               ),
             meta: {
               layout: "ManagerLayout",
@@ -72,7 +72,7 @@ const routes = [
             name: "update-category",
             component: () =>
               import(
-                /* webpackChunkName: "Dashboard" */ "../pages/manager/Category/CategoryAddEdit.vue"
+                /* webpackChunkName: "UpdateCategory" */ "../pages/manager/Category/CategoryAddEdit.vue"
               ),
             meta: {
               layout: "ManagerLayout",

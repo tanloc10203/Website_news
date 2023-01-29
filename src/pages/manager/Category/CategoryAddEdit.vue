@@ -1,11 +1,31 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import categoryApi from "../../../api/categoryApi";
+import FormCategoryAddEdit from "../../../components/manager/category/FormCategoryAddEdit.vue";
 
 const route = useRoute();
 const params = route.params;
+const categorySelected = ref();
 
 const isModeUpdate = computed(() => (params?.categoryId ? true : false));
+
+const getCategoryById = async (id) => {
+  try {
+    const response = await categoryApi.getById(id);
+    if (response && response.elements) {
+      categorySelected.value = response.elements;
+    }
+  } catch (error) {
+    console.log("error getCategoryById:::", error);
+  }
+};
+
+onMounted(() => {
+  if (params?.categoryId) {
+    getCategoryById(params.categoryId);
+  }
+});
 </script>
 
 <template>
@@ -14,6 +34,11 @@ const isModeUpdate = computed(() => (params?.categoryId ? true : false));
       <h1 class="text-center">
         {{ isModeUpdate ? "Cập nhật" : "Thêm" }} danh mục
       </h1>
+
+      <form-category-add-edit
+        :isModeUpdate="isModeUpdate"
+        :selected="categorySelected ? categorySelected : {}"
+      />
     </v-col>
   </v-row>
 </template>

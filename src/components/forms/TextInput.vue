@@ -27,6 +27,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  others: {
+    type: Object,
+    default: {},
+  },
 });
 
 const name = toRef(props, "name");
@@ -43,24 +47,20 @@ const {
 </script>
 
 <template>
-  <div
-    class="TextInput"
-    :class="{ 'has-error': !!errorMessage, success: meta.valid }"
+  <v-input
+    :error="!!errorMessage"
+    :error-messages="errorMessage && errorMessage"
   >
-    <label :for="name">{{ label }}</label>
-
     <v-text-field
       :name="name"
-      :id="name"
+      :label="label"
       :type="type"
       :value="inputValue"
       :placeholder="placeholder"
       @input="handleChange"
       @blur="handleBlur"
+      filled
+      v-bind="others"
     />
-
-    <p class="help-message" v-show="errorMessage || meta.valid">
-      {{ errorMessage || successMessage }}
-    </p>
-  </div>
+  </v-input>
 </template>
