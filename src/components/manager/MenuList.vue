@@ -6,29 +6,53 @@
       </button>
     </template>
 
-    <v-card class="mx-auto" max-width="300">
-      <v-list>
-        <v-list-item
-          v-for="(item, index) in items"
-          :key="index"
-          active-color="primary"
-          variant="plain"
-          class="cursor-point"
-        >
-          <v-list-item-title v-text="item.title" />
-        </v-list-item>
-      </v-list>
-    </v-card>
+    <v-list>
+      <v-list-item active-color="primary" variant="plain" class="cursor-point">
+        <v-list-item-title>
+          <router-link
+            class="text-decoration-none text-error"
+            :to="`/manager/category/add/children/${selected._id}`"
+          >
+            Thêm danh mục con
+          </router-link>
+        </v-list-item-title>
+        <v-list-item-title
+          v-text="`Hiện danh mục con`"
+          class="text-success"
+          @click="onShowChildren(selected)"
+        />
+        <v-list-item-title>
+          <router-link
+            class="text-decoration-none text-black"
+            :to="`/manager/category/update/${selected._id}`"
+          >
+            Sửa danh mục
+          </router-link>
+        </v-list-item-title>
+        <v-list-item-title
+          v-text="`Xoá danh mục`"
+          @click="onOpenDelete(selected)"
+        />
+      </v-list-item>
+    </v-list>
   </v-menu>
 </template>
 
-<script setup>
-import { defineProps } from "vue";
+<script>
+import { defineComponent } from "@vue/runtime-core";
 
-defineProps({
-  items: {
-    type: [Object],
-    required: true,
+export default defineComponent({
+  props: {
+    selected: {
+      type: Object,
+      required: true,
+    },
+    onOpenDelete: {
+      type: Function,
+    },
+    onShowChildren: {
+      type: Function,
+    },
   },
 });
 </script>

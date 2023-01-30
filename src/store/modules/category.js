@@ -5,19 +5,33 @@ const state = () => ({
   categories: [],
   isLoading: false,
   error: "",
+  filters: {
+    page: 1,
+    limit: 5,
+    where: "level,1",
+  },
+  pagination: {
+    page: 1,
+    limit: 5,
+    totalRows: 5,
+  },
 });
 
 const mutations = {
   fetchAllStart: (state) => {
     state.isLoading = true;
   },
-  fetchAllSuccess: (state, data) => {
+  fetchAllSuccess: (state, payload) => {
     state.isLoading = false;
-    state.categories = data;
+    state.categories = payload.elements;
+    state.pagination = payload.meta.pagination;
   },
   fetchAllFail: (state, error) => {
     state.isLoading = false;
     state.error = error;
+  },
+  setFilter: (state, payload) => {
+    state.filters = payload;
   },
 };
 
@@ -29,7 +43,7 @@ const actions = {
       const response = await categoryApi.getAll(filters);
 
       if (response && response.elements) {
-        commit("fetchAllSuccess", response.elements);
+        commit("fetchAllSuccess", response);
       }
     } catch (error) {
       console.log("fetchAllCategory error:::");
@@ -43,6 +57,9 @@ const actions = {
         commit("fetchAllFail", error.message);
       }
     }
+  },
+  changeFilter: ({ commit }, payload) => {
+    commit("setFilter", payload);
   },
 };
 

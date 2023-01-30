@@ -68,11 +68,64 @@ const routes = [
             },
           },
           {
+            path: "add/children/:parentId",
+            name: "add-children-category",
+            component: () =>
+              import(
+                /* webpackChunkName: "AddCategory" */ "../pages/manager/Category/CategoryAddEdit.vue"
+              ),
+            meta: {
+              layout: "ManagerLayout",
+              auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
+            },
+          },
+          {
             path: "update/:categoryId",
             name: "update-category",
             component: () =>
               import(
                 /* webpackChunkName: "UpdateCategory" */ "../pages/manager/Category/CategoryAddEdit.vue"
+              ),
+            meta: {
+              layout: "ManagerLayout",
+              auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
+            },
+          },
+        ],
+      },
+      {
+        path: "post",
+        children: [
+          {
+            path: "",
+            name: "post",
+            component: () =>
+              import(
+                /* webpackChunkName: "Post" */ "../pages/manager/Post/Post.vue"
+              ),
+            meta: {
+              layout: "ManagerLayout",
+              auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
+            },
+          },
+          {
+            path: "add",
+            name: "add-post",
+            component: () =>
+              import(
+                /* webpackChunkName: "Post Add" */ "../pages/manager/Post/PostAddEdit.vue"
+              ),
+            meta: {
+              layout: "ManagerLayout",
+              auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
+            },
+          },
+          {
+            path: "update/:id",
+            name: "update-post",
+            component: () =>
+              import(
+                /* webpackChunkName: "Post Update" */ "../pages/manager/Post/PostAddEdit.vue"
               ),
             meta: {
               layout: "ManagerLayout",

@@ -33,18 +33,22 @@ export default defineComponent({
       type: Object,
       default: {},
     },
+    parent: {
+      type: Object,
+      default: {},
+    },
   },
   setup(props) {
-    const router = useRouter();
-    const name = ref("");
-    const slug = ref("");
-    const max = 40;
-    const errorMessage = ref("");
     const ruleName = [
       (v) => !!v || "Tên danh mục là trường bắt buộc",
       (v) =>
         (v && v.length <= max) || `Tên danh mục không vượt quá ${max} kí tự`,
     ];
+    const router = useRouter();
+    const name = ref("");
+    const slug = ref("");
+    const max = 40;
+    const errorMessage = ref("");
     let errors = {};
     const store = useStore();
 
@@ -63,16 +67,24 @@ export default defineComponent({
 
     const handleSubmit = async () => {
       if (Object.keys(errors).length === 0) {
-        const data = {
+        let data = {
           name: name.value,
           slug: slug.value,
         };
 
         try {
           let response;
-          const selectedLength = Object.keys(props.selected).length;
+          const selectedEmpty = Object.keys(props.selected).length === 0;
+          const parentEmpty = Object.keys(props.parent).length === 0;
 
-          if (selectedLength === 0) {
+          if (selectedEmpty) {
+            if (!parentEmpty) {
+              data = {
+                ...data,
+                level: +props.parent.level + 1,
+                parentId: props.parent._id,
+              };
+            }
             response = await categoryApi.create(data);
           } else {
             response = await categoryApi.update({
@@ -83,9 +95,9 @@ export default defineComponent({
 
           if (response && response.elements) {
             const payload = {
-              text: `${
-                selectedLength === 0 ? "Thêm" : "Cập nhật"
-              } danh mục thành công`,
+              text: `${selectedEmpty ? "Thêm" : "Cập nhật"} danh mục ${
+                !parentEmpty ? "con" : ""
+              } thành công`,
               color: "success",
               open: true,
             };

@@ -7,7 +7,8 @@ import authApi from "../api/authApi";
 const drawer = ref(null);
 const links = ref([
   ["mdi-inbox-arrow-down", "Dashboard", "/manager/dashboard"],
-  ["mdi-send", "Category", "/manager/category"],
+  ["mdi-send", "Quản lý danh mục", "/manager/category"],
+  ["mdi-send", "Quản lý bài viết", "/manager/post"],
 ]);
 const theme = ref(localStorage.getItem("theme") || "light");
 const store = useStore();
@@ -71,7 +72,7 @@ function onClick() {
           <v-icon>{{ icon }}</v-icon>
         </template>
 
-        <router-link :to="to" class="d-block">
+        <router-link :to="to" class="d-block text-decoration-none">
           <v-list-item-title> {{ text }} </v-list-item-title>
         </router-link>
       </v-list-item>
