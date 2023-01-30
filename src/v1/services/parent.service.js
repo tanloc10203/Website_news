@@ -14,6 +14,19 @@ class ParentService {
         let options = { is_delete: false };
         let sort = filters.sort || "_id";
         let sortBy = {};
+        let where = filters.where;
+        let whereBy = {};
+
+        where ? (where = where.split(",")) : (where = [where]);
+
+        where[1] && (whereBy[where[0]] = where[1]);
+
+        if (where) {
+          options = {
+            ...options,
+            ...whereBy,
+          };
+        }
 
         filters.sort ? (sort = filters.sort.split(",")) : (sort = [sort]);
         // * ["sort", "desc"] || ["_id"];
@@ -23,7 +36,7 @@ class ParentService {
 
         if (filters.search && filters.field) {
           options = {
-            is_delete: false,
+            ...options,
             [filters.field]: { $regex: filters.search, $options: "i" },
           };
         }

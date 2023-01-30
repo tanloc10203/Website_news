@@ -43,7 +43,7 @@ class CategoryService extends ParentService {
     });
   };
 
-  getAll = (filters = {}) => {
+  getAllWithChildren = () => {
     return new Promise(async (resolve, reject) => {
       try {
         let result = await this.model.find({ is_delete: false });

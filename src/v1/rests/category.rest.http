@@ -12,7 +12,10 @@ Content-Type: application/json
 }
 
 ### Get all
-GET {{url}}
+GET {{url}}?where=level,1
+
+### Get with children
+GET {{url}}/children
 
 
 ### Get by id

@@ -26,6 +26,25 @@ class CategoryController extends ParentController {
     }
   };
 
+  getAll = async (req, res, next) => {
+    try {
+      const selectField = "name slug level";
+      const response = await this.service.getAll({ selectField, ...req.query });
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllWithChildren = async (req, res, next) => {
+    try {
+      const response = await this.service.getAllWithChildren();
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getByParentId = async (req, res, next) => {
     try {
       const response = await this.service.getByParentId(req.params.id);
