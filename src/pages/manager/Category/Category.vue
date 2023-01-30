@@ -3,6 +3,7 @@ import MenuList from "../../../components/manager/MenuList.vue";
 import { useStore } from "vuex";
 import { onMounted, computed, ref } from "vue";
 import categoryApi from "../../../api/categoryApi";
+import Toast from "../../../components/Toast.vue";
 
 const store = useStore();
 
@@ -53,33 +54,42 @@ const items = [
         </router-link>
       </div>
 
-      <v-table>
-        <thead>
-          <tr>
-            <th class="text-left">Tên danh mục</th>
-            <th class="text-left">Slug</th>
-            <th class="text-left">Level</th>
-            <th class="text-center">Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in categories" :key="item.name">
-            <td>{{ item.name }}</td>
-            <td>{{ item.slug }}</td>
-            <td>{{ item.level }}</td>
-            <th class="text-center">
-              <v-btn>Thêm danh mục con</v-btn>
-              <v-btn color="blue-grey">Hiện danh mục con</v-btn>
-              <router-link :to="`/manager/category/update/${item._id}`">
-                <v-btn color="primary">Sửa danh mục</v-btn>
-              </router-link>
-              <v-btn color="error" @click="handleOpenDelete(item)"
-                >Xoá danh mục</v-btn
-              >
-            </th>
-          </tr>
-        </tbody>
-      </v-table>
+      <div class="position-relative">
+        <v-progress-linear
+          v-if="isLoading"
+          indeterminate
+          color="green"
+          class="position-absolute"
+        />
+
+        <v-table>
+          <thead>
+            <tr>
+              <th class="text-left">Tên danh mục</th>
+              <th class="text-left">Slug</th>
+              <th class="text-left">Level</th>
+              <th class="text-center">Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in categories" :key="item.name">
+              <td>{{ item.name }}</td>
+              <td>{{ item.slug }}</td>
+              <td>{{ item.level }}</td>
+              <th class="text-center">
+                <v-btn>Thêm danh mục con</v-btn>
+                <v-btn color="blue-grey">Hiện danh mục con</v-btn>
+                <router-link :to="`/manager/category/update/${item._id}`">
+                  <v-btn color="primary">Sửa danh mục</v-btn>
+                </router-link>
+                <v-btn color="error" @click="handleOpenDelete(item)"
+                  >Xoá danh mục</v-btn
+                >
+              </th>
+            </tr>
+          </tbody>
+        </v-table>
+      </div>
 
       <v-dialog v-model="dialog" persistent max-width="500">
         <v-card>

@@ -10,6 +10,8 @@ const categorySelected = ref();
 
 const isModeUpdate = computed(() => (params?.categoryId ? true : false));
 
+console.log(isModeUpdate);
+
 const getCategoryById = async (id) => {
   try {
     const response = await categoryApi.getById(id);
@@ -36,9 +38,10 @@ onMounted(() => {
       </h1>
 
       <form-category-add-edit
-        :isModeUpdate="isModeUpdate"
+        v-if="isModeUpdate"
         :selected="categorySelected ? categorySelected : {}"
       />
+      <form-category-add-edit v-else />
     </v-col>
   </v-row>
 </template>

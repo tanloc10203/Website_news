@@ -23,6 +23,12 @@ function handleSubmit() {
     try {
       const response = await authApi.signIn(data);
       if (response.elements) {
+        store.dispatch("toast/startToast", {
+          text: "Đăng nhập thành công",
+          color: "success",
+          open: true,
+        });
+
         // * Lưu accessToken vào store
         store.dispatch("auth/saveAccessToken", response.elements.accessToken);
 

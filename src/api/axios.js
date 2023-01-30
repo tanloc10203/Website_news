@@ -37,12 +37,17 @@ instance.interceptors.response.use(
      * * Kiểm tra nếu nó bằng đường dẫn "/auth/refresh-token" thì sẽ return error
      * * Nếu không sẽ bị lập vô tận
      */
-    if (response.status === 401 && config.url === "/auth/refresh-token") {
+    if (
+      response &&
+      response.status === 401 &&
+      config.url === "/auth/refresh-token"
+    ) {
       return Promise.reject(error);
     }
 
     // * Kiểm tra accessToken hết hạn thì sẽ gọi "/auth/refresh-token" để cung cấp lại accessToken
     if (
+      response &&
       response.status === 401 &&
       response.data.errors &&
       response.data.errors.message === "jwt expired"
