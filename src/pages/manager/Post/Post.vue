@@ -11,7 +11,6 @@
 
       <div class="position-relative">
         <v-progress-linear
-          v-if="isLoading"
           indeterminate
           color="green"
           class="position-absolute"

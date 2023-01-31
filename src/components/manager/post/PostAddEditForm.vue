@@ -19,6 +19,8 @@
       @update:modelValue="handleChangeSelect"
     />
 
+    <CKEditorCustom />
+
     <v-btn
       type="submit"
       :disabled="!title || !categoryId"
@@ -41,8 +43,13 @@ import {
 import slugify from "slugify";
 import { useStore } from "vuex";
 import { emptyObject } from "../../../utils/functions";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import CKEditorCustom from "./CKEditorCustom.vue";
 
 export default defineComponent({
+  components: {
+    CKEditorCustom,
+  },
   props: {
     isAddMode: {
       type: Boolean,
@@ -51,6 +58,9 @@ export default defineComponent({
   setup({ isAddMode }) {
     const store = useStore();
 
+    const editor = ref(ClassicEditor);
+    const editorData = ref("");
+    const editorConfig = ref({});
     const title = ref("");
     const slug = ref("");
     const categoryId = ref("");
@@ -100,6 +110,9 @@ export default defineComponent({
     };
 
     return {
+      editor,
+      editorData,
+      editorConfig,
       title,
       ruleTitle,
       max,

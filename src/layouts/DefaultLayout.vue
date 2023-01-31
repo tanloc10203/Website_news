@@ -5,6 +5,6 @@
       <router-link to="/about">About</router-link>
     </nav>
 
-    <slot />
+    <router-view />
   </div>
 </template>

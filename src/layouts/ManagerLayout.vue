@@ -1,51 +1,66 @@
-<script setup>
-import { ref, computed } from "vue";
+<script>
+import { ref, computed, defineComponent } from "vue";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 import authApi from "../api/authApi";
 
-const drawer = ref(null);
-const links = ref([
-  ["mdi-inbox-arrow-down", "Dashboard", "/manager/dashboard"],
-  ["mdi-send", "Quản lý danh mục", "/manager/category"],
-  ["mdi-send", "Quản lý bài viết", "/manager/post"],
-]);
-const theme = ref(localStorage.getItem("theme") || "light");
-const store = useStore();
-const router = useRouter();
+export default defineComponent({
+  setup() {
+    const drawer = ref(null);
+    const links = ref([
+      ["mdi-inbox-arrow-down", "Dashboard", "/manager/dashboard"],
+      ["mdi-send", "Quản lý danh mục", "/manager/category"],
+      ["mdi-send", "Quản lý bài viết", "/manager/post"],
+    ]);
+    const theme = ref(localStorage.getItem("theme") || "light");
+    const store = useStore();
+    const router = useRouter();
 
-const user = computed(() =>
-  Object.keys(store.state.auth.user).length === 0 ? null : store.state.auth.user
-);
+    const user = computed(() =>
+      Object.keys(store.state.auth.user).length === 0
+        ? null
+        : store.state.auth.user
+    );
 
-store.dispatch("auth/getCurrentUserLogin").catch(async (error) => {
-  if (
-    error.response &&
-    error.response.data &&
-    error.response.data.errors &&
-    error.response.data.errors.message !== "jwt expired"
-  ) {
-    await handleLogout();
-  }
-});
+    store.dispatch("auth/getCurrentUserLogin").catch(async (error) => {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.errors &&
+        error.response.data.errors.message !== "jwt expired"
+      ) {
+        await handleLogout();
+      }
+    });
 
-const handleLogout = async () => {
-  try {
-    const response = await authApi.signOut();
-    if (response) {
-      store.dispatch("auth/remove");
-      router.push("/login");
+    const handleLogout = async () => {
+      try {
+        const response = await authApi.signOut();
+        if (response) {
+          store.dispatch("auth/remove");
+          router.push("/login");
+        }
+      } catch (error) {
+        console.log("error handleLogout:::", error);
+        throw new Error(error.message);
+      }
+    };
+
+    function onClick() {
+      theme.value = theme.value === "light" ? "dark" : "light";
+      localStorage.setItem("theme", theme.value);
     }
-  } catch (error) {
-    console.log("error handleLogout:::", error);
-    throw new Error(error.message);
-  }
-};
 
-function onClick() {
-  theme.value = theme.value === "light" ? "dark" : "light";
-  localStorage.setItem("theme", theme.value);
-}
+    return {
+      onClick,
+      handleLogout,
+      theme,
+      drawer,
+      links,
+      user,
+    };
+  },
+});
 </script>
 
 <template>
@@ -80,7 +95,7 @@ function onClick() {
 
     <v-main>
       <v-container>
-        <slot />
+        <router-view />
       </v-container>
     </v-main>
   </v-app>

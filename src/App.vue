@@ -1,57 +1,45 @@
-<script setup>
-import { useRoute } from "vue-router";
-import { watch, ref, markRaw, computed, onMounted } from "vue";
-import Toast from "./components/Toast.vue";
+<script>
+import { computed, defineComponent, watch } from "vue";
 import { useStore } from "vuex";
+import Toast from "./components/Toast.vue";
 
-const defaultLayout = "DefaultLayout";
-const route = useRoute();
-const store = useStore();
-const layout = ref();
-
-const text = computed(() => store.state["toast"].text);
-const open = computed(() => store.state["toast"].open);
-const color = computed(() => store.state["toast"].color);
-
-watch(
-  () => store.state["toast"].open,
-  (open) => {
-    if (open) {
-      setTimeout(() => store.dispatch("toast/saveOpen", { open: false }), 1504);
-    }
-  }
-);
-
-watch(
-  () => route.meta?.layout,
-  async (metaLayout) => {
-    try {
-      let component;
-
-      if (metaLayout) {
-        component = await import(`./layouts/${metaLayout}.vue`);
-      } else {
-        component = await import(`./layouts/${defaultLayout}.vue`);
-      }
-
-      layout.value = markRaw(component?.default);
-    } catch (e) {
-      let component = await import(`./layouts/${defaultLayout}.vue`);
-      layout.value = markRaw(component);
-    }
+export default defineComponent({
+  components: {
+    Toast,
   },
-  {
-    immediate: true,
-  }
-);
+  setup() {
+    const store = useStore();
+    const text = computed(() => store.state["toast"].text);
+    const open = computed(() => store.state["toast"].open);
+    const color = computed(() => store.state["toast"].color);
+
+    watch(
+      () => store.state["toast"].open,
+      (open) => {
+        if (open) {
+          setTimeout(
+            () => store.dispatch("toast/saveOpen", { open: false }),
+            1504
+          );
+        }
+      }
+    );
+
+    return {
+      text,
+      open,
+      color,
+    };
+  },
+});
 </script>
 
 <template>
-  <component :is="layout">
+  <div>
     <router-view />
 
     <Toast v-if="open" :open="open" :color="color" :text="text" />
-  </component>
+  </div>
 </template>
 
 <style>
