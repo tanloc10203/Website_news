@@ -13,7 +13,7 @@ const PostSchema = new Schema(
     },
     detail_text: {
       type: String,
-      required: true,
+      default: "",
     },
     detail_html: {
       type: String,

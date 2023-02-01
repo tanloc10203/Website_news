@@ -17,14 +17,13 @@ class PostController extends ParentController {
 
       if (
         !data.title ||
-        !data.detail_text ||
         !data.detail_html ||
         !data.categoryId ||
         !data.userId
       ) {
         return next({
           message:
-            "title, detail_text, detail_html, cateogryId, userId là trường bắt buộc !",
+            "title, detail_html, cateogryId, userId là trường bắt buộc !",
           status: 400,
         });
       }
