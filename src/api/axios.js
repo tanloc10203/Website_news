@@ -2,7 +2,7 @@ import axios from "axios";
 import authApi from "./authApi";
 
 const instance = axios.create({
-  baseURL: process.env.VUE_APP_ENDPOINT_URL,
+  baseURL: process.env.VUE_APP_ENDPOINT_URL + "/api/v1/",
   withCredentials: true,
 });
 

@@ -8,9 +8,9 @@ import "./assets/css/styles.css";
 
 const app = createApp(App);
 
-app.use(CKEditor);
 app.use(store);
 app.use(router);
 app.use(vuetify);
+app.use(CKEditor);
 
 app.mount("#app");

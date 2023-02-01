@@ -16,14 +16,16 @@
       :items="categories"
       item-title="name"
       item-value="_id"
-      @update:modelValue="handleChangeSelect"
     />
 
-    <CKEditorCustom />
+    <CKEditorCustom
+      :editorData="editorData"
+      @update:modelValue="onChangeEditor"
+    />
 
     <v-btn
       type="submit"
-      :disabled="!title || !categoryId"
+      :disabled="!title || !categoryId || !editorData"
       color="success"
       class="mt-5 d-block"
     >
@@ -43,7 +45,6 @@ import {
 import slugify from "slugify";
 import { useStore } from "vuex";
 import { emptyObject } from "../../../utils/functions";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import CKEditorCustom from "./CKEditorCustom.vue";
 
 export default defineComponent({
@@ -58,12 +59,10 @@ export default defineComponent({
   setup({ isAddMode }) {
     const store = useStore();
 
-    const editor = ref(ClassicEditor);
-    const editorData = ref("");
-    const editorConfig = ref({});
     const title = ref("");
     const slug = ref("");
     const categoryId = ref("");
+    const editorData = ref("");
 
     let errors = {};
     const max = 200;
@@ -83,18 +82,17 @@ export default defineComponent({
       store.dispatch("category/fetchAllCategory", { page: 1, limit: 100 });
     });
 
-    watch(title, (titleNew) => {
-      slug.value = slugify(titleNew, { locale: "vi" });
-      titleNew.length >= max ? (errors["title"] = true) : (errors = {});
-    });
+    watch(
+      [categoryId, title, editorData],
+      ([categoryId, titleNew, editorData]) => {
+        !categoryId ? (errors["categoryId"] = true) : (errors = {});
 
-    watch(categoryId, (categoryId) => {
-      !categoryId ? (errors["categoryId"] = true) : (errors = {});
-    });
+        slug.value = slugify(titleNew, { locale: "vi" });
+        titleNew.length >= max ? (errors["title"] = true) : (errors = {});
 
-    const handleChangeSelect = (value) => {
-      console.log("check value categoryId:::", value);
-    };
+        !editorData ? (errors["editorData"] = true) : (errors = {});
+      }
+    );
 
     const handleSubmit = () => {
       if (emptyObject(errors)) {
@@ -103,16 +101,20 @@ export default defineComponent({
           slug: slug.value,
           categoryId: categoryId.value,
           userId: user.value._id,
+          detail_html: editorData.value,
         };
+
+        // * Call api save post
 
         console.log(data);
       }
     };
 
+    const onChangeEditor = (value) => {
+      editorData.value = value;
+    };
+
     return {
-      editor,
-      editorData,
-      editorConfig,
       title,
       ruleTitle,
       max,
@@ -120,8 +122,9 @@ export default defineComponent({
       categoryId,
       categories,
       isAddMode,
-      handleChangeSelect,
+      editorData,
       handleSubmit,
+      onChangeEditor,
     };
   },
 });

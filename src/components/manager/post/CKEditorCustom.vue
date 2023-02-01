@@ -1,62 +1,40 @@
 <template>
-  <div id="app">
-    <ckeditor
-      :editor="editor"
-      v-model="editorData"
-      :config="editorConfig"
-      id="editor"
-    ></ckeditor>
-  </div>
+  <ckeditor :editor="editor" v-model="value" :config="editorConfig"></ckeditor>
 </template>
 
 <script>
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { defineComponent, ref } from "@vue/runtime-core";
+import { defineComponent, ref, watch } from "@vue/runtime-core";
+import { uploadImage } from "../../../utils/functions";
 
 export default defineComponent({
-  setup() {
-    const uploadAdapter = (loader) => {
-      console.log("check loader", loader);
-
-      return {
-        upload: () => {
-          return new Promise((resolve, reject) => {
-            loader.file.then(async (file) => {
-              try {
-                if (file) {
-                  console.log("check file:::", file);
-                  resolve({ default: file });
-                }
-              } catch (error) {
-                reject(error);
-              }
-            });
-          });
-        },
-      };
-    };
-
-    const uploader = (editor) => {
+  props: {
+    editorData: {
+      type: String,
+      required: true,
+    },
+  },
+  emits: ["update:modelValue"],
+  setup({ editorData }, { emit }) {
+    const value = ref(editorData);
+    function uploader(editor) {
       editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
-        return uploadAdapter(loader);
+        return uploadImage(loader);
       };
-    };
+    }
 
-    // Load the custom upload adapter as a plugin of the editor.
-    ClassicEditor.create(document.querySelector("#editor"), {
-      extraPlugins: [uploader],
-    }).catch((error) => {
-      console.log("error upload ckeditor:::", error);
+    watch(value, (value) => {
+      if (value) {
+        emit("update:modelValue", value);
+      }
     });
 
-    const editor = ClassicEditor;
-    const editorData = ref("<p>Content of the editor.</p>");
-    const editorConfig = {};
-
     return {
-      editor,
-      editorData,
-      editorConfig,
+      editor: ClassicEditor,
+      value,
+      editorConfig: {
+        extraPlugins: [uploader],
+      },
     };
   },
 });
