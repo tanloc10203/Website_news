@@ -29,7 +29,7 @@ app.use(
 );
 app.use(upload.array("files"));
 
-app.post("/api/v1/image/upload", (req, res, next) => {
+app.post("/api/v1/upload/image", (req, res, next) => {
   if (!req.files) {
     return next({
       message: "Không tìm thấy file ảnh",
