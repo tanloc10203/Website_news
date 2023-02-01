@@ -1,36 +1,98 @@
 <template>
-  <form @submit.prevent="handleSubmit">
-    <v-text-field
-      type="text"
-      label="Tiêu đề bài viết"
-      v-model="title"
-      :counter="max"
-      :rules="ruleTitle"
-    />
+  <form @submit.prevent="handleSubmit" class="mt-5">
+    <v-row>
+      <v-col cols="12">
+        <v-text-field
+          type="text"
+          label="Tiêu đề bài viết"
+          v-model="title"
+          :counter="max"
+          :rules="ruleTitle"
+        />
+      </v-col>
 
-    <v-text-field v-model="slug" type="text" label="Slug danh mục" disabled />
+      <v-col cols="12">
+        <v-text-field
+          v-model="slug"
+          type="text"
+          label="Slug danh mục"
+          disabled
+        />
+      </v-col>
 
-    <v-select
-      v-model="categoryId"
-      label="Danh mục"
-      :items="categories"
-      item-title="name"
-      item-value="_id"
-    />
+      <v-col cols="12" md="6" sm="12" xs="12">
+        <v-select
+          v-model="categoryId"
+          label="Danh mục"
+          :items="categories"
+          item-title="name"
+          item-value="_id"
+          @update:modelValue="onChangeSelect"
+        />
+      </v-col>
+      <v-col cols="12" md="6" sm="12" xs="12">
+        <v-select
+          v-if="isExistCategorySub"
+          v-model="categorySubId"
+          label="Danh mục con"
+          :items="categorySub"
+          item-title="name"
+          item-value="_id"
+        />
+      </v-col>
 
-    <CKEditorCustom
-      :editorData="editorData"
-      @update:modelValue="onChangeEditor"
-    />
+      <v-col v-if="imageUrl" cols="12" sm="12" justify="center">
+        <v-sheet
+          class="rounded p-2 mx-auto"
+          max-width="500"
+          elevation="12"
+          height="100%"
+          width="100%"
+        >
+          <v-img :src="imageUrl" />
+        </v-sheet>
+      </v-col>
 
-    <v-btn
-      type="submit"
-      :disabled="!title || !categoryId || !editorData"
-      color="success"
-      class="mt-5 d-block"
-    >
-      {{ isAddMode ? "Tạo Bài Viết" : "Lưu Bài Viết" }}
-    </v-btn>
+      <v-col cols="12">
+        <v-file-input
+          accept="image/png, image/jpeg, image/bmp"
+          v-model="image"
+          label="Ảnh tiêu đề"
+          @update:modelValue="onFileChange"
+          :rules="ruleImage"
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <CKEditorCustom
+          :editorData="editorData"
+          @update:modelValue="onChangeEditor"
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-btn
+          color="info"
+          type="submit"
+          :loading="loading"
+          :disabled="
+            !title ||
+            !categoryId ||
+            !editorData ||
+            !image ||
+            (isExistCategorySub && !categorySubId) ||
+            loading
+          "
+        >
+          {{ isAddMode ? "Tạo Bài Viết" : "Lưu Bài Viết" }}
+          <template v-slot:loader>
+            <span class="custom-loader">
+              <v-icon light>mdi-cached</v-icon>
+            </span>
+          </template>
+        </v-btn>
+      </v-col>
+    </v-row>
   </form>
 </template>
 
@@ -38,14 +100,16 @@
 import {
   computed,
   defineComponent,
+  onBeforeMount,
   ref,
   watch,
-  onBeforeMount,
 } from "@vue/runtime-core";
 import slugify from "slugify";
 import { useStore } from "vuex";
 import { emptyObject } from "../../../utils/functions";
 import CKEditorCustom from "./CKEditorCustom.vue";
+import uploadApi from "../../../api/uploadApi";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   components: {
@@ -58,11 +122,17 @@ export default defineComponent({
   },
   setup({ isAddMode }) {
     const store = useStore();
+    const router = useRouter();
 
     const title = ref("");
     const slug = ref("");
     const categoryId = ref("");
     const editorData = ref("");
+    const categorySubId = ref("");
+    const loading = ref(false);
+
+    const image = ref(undefined);
+    const imageUrl = ref("");
 
     let errors = {};
     const max = 200;
@@ -70,16 +140,39 @@ export default defineComponent({
       (v) => !!v || "Tên tiêu đề là trường bắt buộc",
       (v) =>
         (v && v.length <= max) || `Tên tiêu đề không vượt quá ${max} kí tự`,
+      (v) => (v && v.length >= 20) || `Tên tiêu đề ít nhất ${20} kí tự`,
+    ];
+    const ruleImage = [
+      (value) => {
+        return (
+          !value ||
+          !value.length ||
+          value[0].size < 2000000 ||
+          "Kích thước của ảnh nhỏ hơn 2 MB!"
+        );
+      },
     ];
 
     const user = computed(() => store.state["auth"].user);
+
     const categories = computed(() => [
       { _id: "", name: "Vui lòng chọn danh mục" },
       ...store.state["category"].categories,
     ]);
 
+    const categorySub = computed(() => [
+      { _id: "", name: "Vui lòng chọn danh mục con" },
+      ...store.state["category"].categorySub,
+    ]);
+
+    const isExistCategorySub = computed(() => categorySub.value.length > 1);
+
     onBeforeMount(() => {
-      store.dispatch("category/fetchAllCategory", { page: 1, limit: 100 });
+      store.dispatch("category/fetchAllCategory", {
+        page: 1,
+        limit: 100,
+        where: "level,1",
+      });
     });
 
     watch(
@@ -94,24 +187,78 @@ export default defineComponent({
       }
     );
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
       if (emptyObject(errors)) {
-        const data = {
+        loading.value = true;
+
+        // * trước khi tạo bài viết phải upload ảnh lên server trước.
+        const resImg = await uploadApi.image(image.value[0]);
+
+        let data = {
           title: title.value,
           slug: slug.value,
           categoryId: categoryId.value,
           userId: user.value._id,
           detail_html: editorData.value,
+          image_title: resImg?.filename,
         };
 
-        // * Call api save post
+        if (categorySubId.value) {
+          data = {
+            ...data,
+            categoryId: categorySubId.value,
+          };
+        }
 
-        console.log(data);
+        // * Call api save post
+        store
+          .dispatch("post/fetchCreatePost", data)
+          .then((value) => {
+            if (value) {
+              loading.value = false;
+              router.push("/manager/post");
+            }
+          })
+          .catch((_) => (loading.value = false));
       }
     };
 
     const onChangeEditor = (value) => {
       editorData.value = value;
+    };
+
+    const onChangeSelect = (value) => {
+      if (!value) {
+        store.dispatch("category/changeSubCategory", []);
+        return;
+      }
+
+      categorySubId.value = "";
+
+      store.dispatch("category/fetchAllCategory", {
+        page: 1,
+        limit: 100,
+        where: `parent_id,${value}`,
+      });
+    };
+
+    const createImage = (file) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        imageUrl.value = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    };
+
+    const onFileChange = (files) => {
+      if (!files[0]) {
+        imageUrl.value = "";
+        return;
+      }
+
+      createImage(files[0]);
     };
 
     return {
@@ -123,8 +270,17 @@ export default defineComponent({
       categories,
       isAddMode,
       editorData,
+      isExistCategorySub,
+      categorySubId,
+      categorySub,
+      image,
+      ruleImage,
+      imageUrl,
+      loading,
+      onFileChange,
       handleSubmit,
       onChangeEditor,
+      onChangeSelect,
     };
   },
 });

@@ -3,6 +3,7 @@ import toast from "./toast";
 
 const state = () => ({
   categories: [],
+  categorySub: [],
   isLoading: false,
   error: "",
   filters: {
@@ -26,12 +27,19 @@ const mutations = {
     state.categories = payload.elements;
     state.pagination = payload.meta.pagination;
   },
+  fetchAllSubSuccess: (state, payload) => {
+    state.isLoading = false;
+    state.categorySub = payload.elements;
+  },
   fetchAllFail: (state, error) => {
     state.isLoading = false;
     state.error = error;
   },
   setFilter: (state, payload) => {
     state.filters = payload;
+  },
+  setSubCategory: (state, payload) => {
+    state.categorySub = payload;
   },
 };
 
@@ -43,10 +51,13 @@ const actions = {
       const response = await categoryApi.getAll(filters);
 
       if (response && response.elements) {
-        commit("fetchAllSuccess", response);
+        if (!filters?.where || (filters.where && filters.where === "level,1")) {
+          commit("fetchAllSuccess", response);
+        } else {
+          commit("fetchAllSubSuccess", response);
+        }
       }
     } catch (error) {
-      console.log("fetchAllCategory error:::");
       if (!error.response) {
         const payload = {
           text: error.message,
@@ -60,6 +71,9 @@ const actions = {
   },
   changeFilter: ({ commit }, payload) => {
     commit("setFilter", payload);
+  },
+  changeSubCategory: ({ commit }, payload) => {
+    commit("setSubCategory", payload);
   },
 };
 

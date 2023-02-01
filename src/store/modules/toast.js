@@ -11,6 +11,7 @@ const mutations = {
     state.text = payload.text;
     state.color = payload.color;
     state.open = payload.open;
+    state.timeout = payload.timeout || 1500;
   },
   SET_OPEN: (state, payload) => {
     state.open = payload.open;
