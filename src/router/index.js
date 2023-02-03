@@ -16,6 +16,14 @@ const routes = [
           import(/* webpackChunkName: "HomView" */ "../views/HomeView.vue"),
       },
       {
+        path: "category/:slug",
+        name: "category.slug",
+        component: () =>
+          import(
+            /* webpackChunkName: "CategorySlug" */ "../views/CategorySlug.vue"
+          ),
+      },
+      {
         path: "about",
         name: "about",
         component: () =>

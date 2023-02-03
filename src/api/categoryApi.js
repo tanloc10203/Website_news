@@ -11,6 +11,9 @@ const categoryApi = {
       params: filters,
     });
   },
+  getAllWithChildren: async () => {
+    return await instance.get(nameModel + "/children");
+  },
   getChildrenByParentId: async (parentId) => {
     return await instance.get(`${nameModel}/parent/${parentId}`);
   },

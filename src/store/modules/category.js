@@ -1,5 +1,4 @@
 import categoryApi from "@/api/categoryApi";
-import toast from "./toast";
 
 const state = () => ({
   categories: [],
@@ -31,6 +30,10 @@ const mutations = {
     state.isLoading = false;
     state.categorySub = payload.elements;
   },
+  fetchAllWithChildrenSuccess: (state, payload) => {
+    state.isLoading = false;
+    state.categories = payload;
+  },
   fetchAllFail: (state, error) => {
     state.isLoading = false;
     state.error = error;
@@ -56,6 +59,27 @@ const actions = {
         } else {
           commit("fetchAllSubSuccess", response);
         }
+      }
+    } catch (error) {
+      if (!error.response) {
+        const payload = {
+          text: error.message,
+          color: "error",
+          open: true,
+        };
+        dispatch("toast/startToast", payload, { root: true });
+        commit("fetchAllFail", error.message);
+      }
+    }
+  },
+  fetchAllWtihChildrenCategory: async ({ dispatch, commit }) => {
+    try {
+      commit("fetchAllStart");
+
+      const response = await categoryApi.getAllWithChildren();
+
+      if (response && response.elements) {
+        commit("fetchAllWithChildrenSuccess", response.elements);
       }
     } catch (error) {
       if (!error.response) {
