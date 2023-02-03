@@ -1,11 +1,20 @@
 <script>
-import { computed, defineComponent, onBeforeMount } from "@vue/runtime-core";
+import {
+  computed,
+  defineComponent,
+  onBeforeMount,
+  ref,
+} from "@vue/runtime-core";
 import { useStore } from "vuex";
 
 export default defineComponent({
   setup() {
     const store = useStore();
-    const posts = computed(() => store.state["post"].posts);
+
+    const dialog = ref(false);
+    const selected = ref();
+
+    const posts = computed(() => store.getters["post/getPost"]);
     const filters = computed(() => store.state["post"].filters);
     const pagination = computed(() => store.state["post"].pagination);
     const isLoading = computed(() => store.state["post"].isLoading);
@@ -26,12 +35,29 @@ export default defineComponent({
       });
     };
 
+    const handleDelete = (post) => {
+      store.dispatch("post/fetchDeletePost", {
+        id: post._id,
+        isDelete: false,
+      });
+      dialog.value = false;
+    };
+
+    const onOpenDialogDelete = (post) => {
+      dialog.value = true;
+      selected.value = post;
+    };
+
     return {
       onChangePage,
+      handleDelete,
+      onOpenDialogDelete,
       posts,
       URL,
       isLoading,
       pagination,
+      dialog,
+      selected,
     };
   },
 });
@@ -54,55 +80,90 @@ export default defineComponent({
           indeterminate
           color="green"
           class="position-absolute"
+          style="top: -5px"
         />
 
         <v-table fixed-header>
           <thead>
             <tr>
               <th class="text-left">Tiêu đề</th>
-              <th class="text-center">Ảnh tiêu đề</th>
-              <th class="text-center">Nội dung</th>
-              <th class="text-center">Hành động</th>
+              <th class="text-left">Nội dung</th>
+              <th class="text-left">Tác giả</th>
+              <th class="text-left">Danh mục</th>
+              <th class="text-left">Thời gian tạo</th>
+              <th class="text-left">Hành động</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="post in posts" :key="post._id">
               <td>
-                <p class="text-truncate" style="max-width: 400px">
-                  {{ post.title }}
-                </p>
+                <v-row no-gutters>
+                  <v-col cols="3">
+                    <v-sheet
+                      class="rounded"
+                      max-width="100"
+                      elevation="8"
+                      height="100%"
+                      width="100%"
+                    >
+                      <v-img :src="`${URL}/${post.image_title}`" />
+                    </v-sheet>
+                  </v-col>
+
+                  <v-col cols="9" align-self="center">
+                    <p class="text-truncate">
+                      {{ post.title }}
+                    </p>
+                  </v-col>
+                </v-row>
               </td>
+
               <td>
-                <v-sheet
-                  class="rounded p-2 mx-auto"
-                  max-width="100"
-                  elevation="12"
-                  height="100%"
-                  width="100%"
-                >
-                  <v-img :src="`${URL}/${post.image_title}`" />
-                </v-sheet>
-              </td>
-              <td>
-                <p class="text-truncate mx-auto" style="max-width: 400px">
+                <p class="text-truncate">
                   {{ post.detail_html }}
                 </p>
               </td>
+
               <td>
-                <v-btn>Sửa</v-btn>
-                <v-btn>Xoá</v-btn>
+                <p class="text-truncate">
+                  {{ post.user_id?.email }}
+                </p>
+              </td>
+
+              <td>
+                <p class="text-truncate">
+                  {{ post.category_id?.name }}
+                </p>
+              </td>
+
+              <td>
+                <p class="text-truncate">
+                  {{ post.createdAt }}
+                </p>
+              </td>
+
+              <td>
+                <router-link
+                  :to="`/manager/post/update/${post._id}`"
+                  class="text-decoration-none"
+                >
+                  <v-btn class="mr-1">Sửa</v-btn>
+                </router-link>
+                <v-btn color="error" @click="onOpenDialogDelete(post)"
+                  >Xoá</v-btn
+                >
               </td>
             </tr>
           </tbody>
         </v-table>
       </div>
 
-      <!-- <v-dialog v-model="dialog" persistent max-width="500">
+      <v-dialog v-model="dialog" persistent max-width="500">
         <v-card>
           <v-card-title class="text-h5"> Xác nhận trước khi xoá </v-card-title>
           <v-card-text
-            >Bạn có muốn xoá danh mục
-            <strong>`{{ selected.name }}`</strong></v-card-text
+            >Bạn có muốn xoá bài viết
+            <strong>`{{ selected.title }}`</strong></v-card-text
           >
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -118,7 +179,7 @@ export default defineComponent({
             </v-btn>
           </v-card-actions>
         </v-card>
-      </v-dialog> -->
+      </v-dialog>
 
       <div class="text-center">
         <v-pagination
@@ -130,3 +191,13 @@ export default defineComponent({
     </v-col>
   </v-row>
 </template>
+
+<style>
+.v-table > .v-table__wrapper > table {
+  table-layout: fixed;
+}
+
+.v-table > .v-table__wrapper > table > tbody > tr > td {
+  padding: 8px 16px;
+}
+</style>

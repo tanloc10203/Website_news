@@ -1,3 +1,245 @@
+<script>
+import {
+  computed,
+  defineComponent,
+  onBeforeMount,
+  ref,
+  watch,
+} from "@vue/runtime-core";
+import slugify from "slugify";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
+import uploadApi from "../../../api/uploadApi";
+import { emptyObject } from "../../../utils/functions";
+import CKEditorCustom from "./CKEditorCustom.vue";
+
+export default defineComponent({
+  props: {
+    isAddMode: {
+      type: Boolean,
+    },
+    postSelected: {
+      type: Object,
+      default: {},
+    },
+  },
+  components: {
+    CKEditorCustom,
+  },
+  setup(props) {
+    const store = useStore();
+    const router = useRouter();
+
+    const title = ref("");
+    const slug = ref("");
+    const categoryId = ref("");
+    const editorData = ref("");
+    const categorySubId = ref("");
+    const loading = ref(false);
+
+    const image = ref(undefined);
+    const imageUrl = ref("");
+
+    let errors = {};
+    const max = 200;
+    const ruleTitle = [
+      (v) => !!v || "Tên tiêu đề là trường bắt buộc",
+      (v) =>
+        (v && v.length <= max) || `Tên tiêu đề không vượt quá ${max} kí tự`,
+      (v) => (v && v.length >= 20) || `Tên tiêu đề ít nhất ${20} kí tự`,
+    ];
+    const ruleImage = [
+      (value) => {
+        return (
+          !value ||
+          !value.length ||
+          value[0].size < 2000000 ||
+          "Kích thước của ảnh nhỏ hơn 2 MB!"
+        );
+      },
+    ];
+    const URL = computed(() => process.env.VUE_APP_ENDPOINT_URL);
+
+    watch(
+      () => props.postSelected,
+      (post) => {
+        if (post) {
+          title.value = post.title;
+          slug.value = slugify(post.title, { locale: "vi" });
+          imageUrl.value = `${URL.value}/${post.image_title}`;
+          editorData.value = post.detail_html;
+
+          if (post?.category_id.parent_id) {
+            categoryId.value = post?.category_id.parent_id;
+
+            store.dispatch("category/fetchAllCategory", {
+              page: 1,
+              limit: 100,
+              where: `parent_id,${post?.category_id.parent_id}`,
+            });
+
+            categorySubId.value = post?.category_id._id;
+          } else {
+            categoryId.value = post?.category_id._id;
+          }
+        }
+      }
+    );
+
+    watch(
+      [categoryId, title, editorData],
+      ([categoryId, titleNew, editorData]) => {
+        !categoryId ? (errors["categoryId"] = true) : (errors = {});
+
+        slug.value = slugify(titleNew, { locale: "vi" });
+        titleNew.length >= max ? (errors["title"] = true) : (errors = {});
+
+        !editorData ? (errors["editorData"] = true) : (errors = {});
+      }
+    );
+
+    const user = computed(() => store.state["auth"].user);
+
+    const categories = computed(() => [
+      { _id: "", name: "Vui lòng chọn danh mục" },
+      ...store.state["category"].categories,
+    ]);
+
+    const categorySub = computed(() => [
+      { _id: "", name: "Vui lòng chọn danh mục con" },
+      ...store.state["category"].categorySub,
+    ]);
+
+    const isExistCategorySub = computed(() => categorySub.value.length > 1);
+
+    onBeforeMount(() => {
+      store.dispatch("category/fetchAllCategory", {
+        page: 1,
+        limit: 100,
+        where: "level,1",
+      });
+    });
+
+    const handleSubmit = async () => {
+      if (emptyObject(errors)) {
+        loading.value = true;
+
+        let data = {
+          title: title.value,
+          slug: slug.value,
+          categoryId: categoryId.value,
+          userId: user.value._id,
+          detail_html: editorData.value,
+        };
+
+        if (image.value) {
+          // * trước khi tạo bài viết phải upload ảnh lên server trước.
+          const resImg = await uploadApi.image(image.value[0]);
+          data = {
+            ...data,
+            image_title: resImg?.filename,
+          };
+        }
+
+        if (categorySubId.value) {
+          data = {
+            ...data,
+            categoryId: categorySubId.value,
+          };
+        }
+
+        if (props.isAddMode) {
+          // * Call api save post
+          store
+            .dispatch("post/fetchCreatePost", data)
+            .then((value) => {
+              if (value) {
+                loading.value = false;
+                router.push("/manager/post");
+              }
+            })
+            .catch((_) => (loading.value = false));
+        } else {
+          console.log(data);
+          store
+            .dispatch("post/fetchUpdatePost", {
+              id: props.postSelected._id,
+              data,
+            })
+            .then((value) => {
+              if (value) {
+                loading.value = false;
+                router.push("/manager/post");
+              }
+            })
+            .catch((_) => (loading.value = false));
+        }
+      }
+    };
+
+    const onChangeEditor = (value) => {
+      editorData.value = value;
+    };
+
+    const onChangeSelect = (value) => {
+      if (!value) {
+        store.dispatch("category/changeSubCategory", []);
+        return;
+      }
+
+      categorySubId.value = "";
+
+      store.dispatch("category/fetchAllCategory", {
+        page: 1,
+        limit: 100,
+        where: `parent_id,${value}`,
+      });
+    };
+
+    const createImage = (file) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        imageUrl.value = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    };
+
+    const onFileChange = (files) => {
+      if (!files[0]) {
+        imageUrl.value = "";
+        return;
+      }
+
+      createImage(files[0]);
+    };
+
+    return {
+      title,
+      ruleTitle,
+      max,
+      slug,
+      categoryId,
+      categories,
+      isAddMode: props.isAddMode,
+      editorData,
+      isExistCategorySub,
+      categorySubId,
+      categorySub,
+      image,
+      ruleImage,
+      imageUrl,
+      loading,
+      onFileChange,
+      handleSubmit,
+      onChangeEditor,
+      onChangeSelect,
+    };
+  },
+});
+</script>
+
 <template>
   <form @submit.prevent="handleSubmit" class="mt-5">
     <v-row>
@@ -79,7 +321,7 @@
             !title ||
             !categoryId ||
             !editorData ||
-            !image ||
+            !imageUrl ||
             (isExistCategorySub && !categorySubId) ||
             loading
           "
@@ -95,193 +337,3 @@
     </v-row>
   </form>
 </template>
-
-<script>
-import {
-  computed,
-  defineComponent,
-  onBeforeMount,
-  ref,
-  watch,
-} from "@vue/runtime-core";
-import slugify from "slugify";
-import { useStore } from "vuex";
-import { emptyObject } from "../../../utils/functions";
-import CKEditorCustom from "./CKEditorCustom.vue";
-import uploadApi from "../../../api/uploadApi";
-import { useRouter } from "vue-router";
-
-export default defineComponent({
-  components: {
-    CKEditorCustom,
-  },
-  props: {
-    isAddMode: {
-      type: Boolean,
-    },
-  },
-  setup({ isAddMode }) {
-    const store = useStore();
-    const router = useRouter();
-
-    const title = ref("");
-    const slug = ref("");
-    const categoryId = ref("");
-    const editorData = ref("");
-    const categorySubId = ref("");
-    const loading = ref(false);
-
-    const image = ref(undefined);
-    const imageUrl = ref("");
-
-    let errors = {};
-    const max = 200;
-    const ruleTitle = [
-      (v) => !!v || "Tên tiêu đề là trường bắt buộc",
-      (v) =>
-        (v && v.length <= max) || `Tên tiêu đề không vượt quá ${max} kí tự`,
-      (v) => (v && v.length >= 20) || `Tên tiêu đề ít nhất ${20} kí tự`,
-    ];
-    const ruleImage = [
-      (value) => {
-        return (
-          !value ||
-          !value.length ||
-          value[0].size < 2000000 ||
-          "Kích thước của ảnh nhỏ hơn 2 MB!"
-        );
-      },
-    ];
-
-    const user = computed(() => store.state["auth"].user);
-
-    const categories = computed(() => [
-      { _id: "", name: "Vui lòng chọn danh mục" },
-      ...store.state["category"].categories,
-    ]);
-
-    const categorySub = computed(() => [
-      { _id: "", name: "Vui lòng chọn danh mục con" },
-      ...store.state["category"].categorySub,
-    ]);
-
-    const isExistCategorySub = computed(() => categorySub.value.length > 1);
-
-    onBeforeMount(() => {
-      store.dispatch("category/fetchAllCategory", {
-        page: 1,
-        limit: 100,
-        where: "level,1",
-      });
-    });
-
-    watch(
-      [categoryId, title, editorData],
-      ([categoryId, titleNew, editorData]) => {
-        !categoryId ? (errors["categoryId"] = true) : (errors = {});
-
-        slug.value = slugify(titleNew, { locale: "vi" });
-        titleNew.length >= max ? (errors["title"] = true) : (errors = {});
-
-        !editorData ? (errors["editorData"] = true) : (errors = {});
-      }
-    );
-
-    const handleSubmit = async () => {
-      if (emptyObject(errors)) {
-        loading.value = true;
-
-        // * trước khi tạo bài viết phải upload ảnh lên server trước.
-        const resImg = await uploadApi.image(image.value[0]);
-
-        let data = {
-          title: title.value,
-          slug: slug.value,
-          categoryId: categoryId.value,
-          userId: user.value._id,
-          detail_html: editorData.value,
-          image_title: resImg?.filename,
-        };
-
-        if (categorySubId.value) {
-          data = {
-            ...data,
-            categoryId: categorySubId.value,
-          };
-        }
-
-        // * Call api save post
-        store
-          .dispatch("post/fetchCreatePost", data)
-          .then((value) => {
-            if (value) {
-              loading.value = false;
-              router.push("/manager/post");
-            }
-          })
-          .catch((_) => (loading.value = false));
-      }
-    };
-
-    const onChangeEditor = (value) => {
-      editorData.value = value;
-    };
-
-    const onChangeSelect = (value) => {
-      if (!value) {
-        store.dispatch("category/changeSubCategory", []);
-        return;
-      }
-
-      categorySubId.value = "";
-
-      store.dispatch("category/fetchAllCategory", {
-        page: 1,
-        limit: 100,
-        where: `parent_id,${value}`,
-      });
-    };
-
-    const createImage = (file) => {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        imageUrl.value = e.target.result;
-      };
-
-      reader.readAsDataURL(file);
-    };
-
-    const onFileChange = (files) => {
-      if (!files[0]) {
-        imageUrl.value = "";
-        return;
-      }
-
-      createImage(files[0]);
-    };
-
-    return {
-      title,
-      ruleTitle,
-      max,
-      slug,
-      categoryId,
-      categories,
-      isAddMode,
-      editorData,
-      isExistCategorySub,
-      categorySubId,
-      categorySub,
-      image,
-      ruleImage,
-      imageUrl,
-      loading,
-      onFileChange,
-      handleSubmit,
-      onChangeEditor,
-      onChangeSelect,
-    };
-  },
-});
-</script>

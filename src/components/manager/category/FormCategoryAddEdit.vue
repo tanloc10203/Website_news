@@ -21,11 +21,11 @@
 </template>
 
 <script>
-import { computed, defineComponent, defineProps, ref, watch } from "vue";
-import categoryApi from "../../../api/categoryApi";
-import { useRouter } from "vue-router";
 import slugify from "slugify";
+import { defineComponent, ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import categoryApi from "../../../api/categoryApi";
 
 export default defineComponent({
   props: {

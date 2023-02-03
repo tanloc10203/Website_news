@@ -22,6 +22,10 @@ const authApi = {
   forgotPassword: async (data) => {
     return await instance.post(nameModel + "/forgot-password", data);
   },
+  changePassword: async ({ data, email, token }) => {
+    const url = `${nameModel}/forgot-password/${email}?token=${token}`;
+    return await instance.post(url, data);
+  },
   refreshToken: async () => {
     return await instance.get(nameModel + "/refresh-token");
   },

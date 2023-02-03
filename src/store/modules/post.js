@@ -1,4 +1,5 @@
 import postApi from "@/api/postApi";
+import moment from "moment/moment";
 
 const state = () => ({
   posts: [],
@@ -20,7 +21,7 @@ const mutations = {
   FETCH_START: (state) => {
     state.isLoading = true;
   },
-  FETCH_CREATE_SUCCESS: (state) => {
+  FETCH_CREATE_OR_EDIT_SUCCESS: (state) => {
     state.isLoading = false;
   },
   FETCH_FAIL: (state, payload) => {
@@ -53,7 +54,7 @@ const actions = {
             timeout: 2000,
           };
           dispatch("toast/startToast", payload, { root: true });
-          commit("FETCH_CREATE_SUCCESS");
+          commit("FETCH_CREATE_OR_EDIT_SUCCESS");
           resovle(true);
         }
       } catch (error) {
@@ -101,9 +102,87 @@ const actions = {
       }
     }
   },
+  fetchDeletePost: async ({ commit, dispatch, state }, payload) => {
+    try {
+      commit("FETCH_START");
+
+      const response = await postApi.delete(payload);
+
+      if (response) {
+        const payload = {
+          text: "Xoá bài viết thành công",
+          color: "success",
+          open: true,
+        };
+        dispatch("toast/startToast", payload, { root: true });
+        dispatch("fetchAllPost", { ...state.filters });
+      }
+    } catch (error) {
+      if (!error.response) {
+        const payload = {
+          text: error.message,
+          color: "error",
+          open: true,
+        };
+        dispatch("toast/startToast", payload, { root: true });
+        commit("FETCH_FAIL", error.message);
+      }
+    }
+  },
+  fetchUpdatePost: ({ commit, dispatch }, payload) => {
+    return new Promise(async (resovle, reject) => {
+      try {
+        commit("FETCH_START");
+        const response = await postApi.update(payload);
+
+        if (response && response.elements) {
+          const payload = {
+            text: "Cập nhật bài viết thành công",
+            color: "success",
+            open: true,
+            timeout: 2000,
+          };
+          dispatch("toast/startToast", payload, { root: true });
+          commit("FETCH_CREATE_OR_EDIT_SUCCESS");
+          resovle(true);
+        }
+      } catch (error) {
+        let payload = {
+          text: error.message,
+          color: "error",
+          open: true,
+          timeout: 2000,
+        };
+
+        if (error.response) {
+          payload = {
+            ...payload,
+            text: error.response.data.errors.message,
+          };
+          commit("FETCH_FAIL", error.response.data.errors.message);
+        } else {
+          commit("FETCH_FAIL", error.message);
+        }
+
+        dispatch("toast/startToast", payload, { root: true });
+
+        reject(error);
+      }
+    });
+  },
 };
 
-const getters = {};
+const getters = {
+  getPost: (state) => {
+    if (state.posts.length > 0) {
+      return state.posts.map((post) => ({
+        ...post,
+        createdAt: moment(post.createdAt).format("YYYY-MM-DD h:mm A"),
+      }));
+    }
+    return;
+  },
+};
 
 export default {
   namespaced: true,

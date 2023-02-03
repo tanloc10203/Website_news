@@ -15,8 +15,16 @@ export default defineComponent({
     },
   },
   emits: ["update:modelValue"],
-  setup({ editorData }, { emit }) {
-    const value = ref(editorData);
+  setup(props, { emit }) {
+    const value = ref("");
+
+    watch(
+      () => props.editorData,
+      (editorData) => {
+        value.value = editorData;
+      }
+    );
+
     function uploader(editor) {
       editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
         return uploadImage(loader);
