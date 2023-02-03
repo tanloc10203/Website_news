@@ -5,7 +5,7 @@ class ParentService {
     this.model = model;
   }
 
-  getAll = (filters = {}) => {
+  getAll = (filters = {}, isPostModel = false) => {
     return new Promise(async (resolve, reject) => {
       try {
         const page = parseInt(filters.page) || 1;
@@ -41,12 +41,25 @@ class ParentService {
           };
         }
 
-        const data = await this.model
-          .find(options)
-          .select(filters.selectField)
-          .limit(limit)
-          .skip(skip)
-          .sort(sortBy);
+        let data;
+
+        if (!isPostModel) {
+          data = await this.model
+            .find(options)
+            .select(filters.selectField)
+            .limit(limit)
+            .skip(skip)
+            .sort(sortBy);
+        } else {
+          data = await this.model
+            .find(options)
+            .select(filters.selectField)
+            .limit(limit)
+            .skip(skip)
+            .sort(sortBy)
+            .populate("category_id")
+            .populate("user_id", "-password");
+        }
 
         const total = await this.model.countDocuments(options);
 
@@ -78,7 +91,7 @@ class ParentService {
     };
   };
 
-  getById = (id) => {
+  getById = (id, isPostModel = false) => {
     return new Promise(async (resolve, reject) => {
       try {
         if (!typeOfObjectId(id + "")) {
@@ -91,7 +104,16 @@ class ParentService {
           });
         }
 
-        const response = await this.model.findById(id).exec();
+        let response;
+
+        if (!isPostModel) {
+          response = await this.model.findById(id).exec();
+        } else {
+          response = await this.model
+            .findById(id)
+            .populate("category_id", "_id parent_id name")
+            .exec();
+        }
 
         if (!response) {
           resolve({

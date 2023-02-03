@@ -230,7 +230,7 @@ class AuthService extends ParentService {
 
         const { token } = await TokenService.create({ user_id: findEmail._id });
 
-        const URL_REDIRECT = `${process.env.URI_SERVER}/api/v1/auth/forgot-password/${email}?token=${token}`;
+        const URL_REDIRECT = `${process.env.URL_CLIENT}/password/change/${email}?token=${token}`;
 
         const dataSend = {
           data: {},
