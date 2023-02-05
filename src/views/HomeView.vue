@@ -1,18 +1,32 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
-  </div>
+  <v-row>
+    <v-col cols="12" sm="3">
+      <v-sheet rounded="lg" min-height="268">
+        <!--  -->
+      </v-sheet>
+    </v-col>
+
+    <v-col cols="12" sm="6">
+      <v-sheet min-height="70vh" rounded="lg">
+        <card-home />
+      </v-sheet>
+    </v-col>
+
+    <v-col cols="12" sm="3">
+      <v-sheet rounded="lg" min-height="268">
+        <!--  -->
+      </v-sheet>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from "@/components/HelloWorld.vue";
+import { defineComponent } from "@vue/runtime-core";
+import CardHome from "../components/CardHome.vue";
 
-export default {
-  name: "HomeView",
+export default defineComponent({
   components: {
-    HelloWorld,
+    CardHome,
   },
-};
+});
 </script>

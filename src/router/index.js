@@ -31,10 +31,7 @@ const routes = [
       },
       {
         path: "login",
-        component: () =>
-          import(
-            /* webpackChunkName: "LoginLayout" */ "../layouts/LoginLayout.vue"
-          ),
+
         children: [
           {
             path: "",
@@ -43,16 +40,15 @@ const routes = [
               import(
                 /* webpackChunkName: "FormLogin" */ "../components/FormLogin.vue"
               ),
+            meta: {
+              auth: true,
+            },
           },
         ],
       },
       {
-        path: "manager",
+        path: "/manager",
         redirect: { name: "dashboard" },
-        component: () =>
-          import(
-            /* webpackChunkName: "ManagerLayout" */ "../layouts/ManagerLayout.vue"
-          ),
         children: [
           {
             path: "dashboard",
