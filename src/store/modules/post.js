@@ -37,6 +37,21 @@ const mutations = {
       limit: payload.meta.pagination.limit || 5,
     };
   },
+  FETCH_ALL_HOME_SUCCESS: (state, payload) => {
+    state.isLoading = false;
+    state.posts.push(...payload.elements);
+    state.pagination = payload.meta.pagination;
+    state.filters = {
+      ...state.filters,
+      limit: payload.meta.pagination.limit || 5,
+    };
+  },
+  SET_FILTER: (state, payload) => {
+    state.filters = {
+      ...state.filters,
+      ...payload,
+    };
+  },
 };
 
 const actions = {
@@ -88,7 +103,11 @@ const actions = {
       const response = await postApi.getAll(payload);
 
       if (response && response.elements) {
-        commit("FETCH_ALL_SUCCESS", response);
+        if (payload.isHome) {
+          commit("FETCH_ALL_HOME_SUCCESS", response);
+        } else {
+          commit("FETCH_ALL_SUCCESS", response);
+        }
       }
     } catch (error) {
       if (!error.response) {
@@ -169,6 +188,9 @@ const actions = {
         reject(error);
       }
     });
+  },
+  changeFilter: ({ commit }, payload) => {
+    commit("SET_FILTER", payload);
   },
 };
 

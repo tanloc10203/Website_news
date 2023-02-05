@@ -7,7 +7,7 @@
     </v-col>
 
     <v-col cols="12" sm="6">
-      <v-sheet min-height="70vh" rounded="lg">
+      <v-sheet rounded="lg">
         <card-home />
       </v-sheet>
     </v-col>

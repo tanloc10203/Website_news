@@ -1,5 +1,10 @@
 <template>
-  <ckeditor :editor="editor" v-model="value" :config="editorConfig"></ckeditor>
+  <ckeditor
+    :editor="editor"
+    v-model="value"
+    tag-name="textarea"
+    :config="editorConfig"
+  ></ckeditor>
 </template>
 
 <script>

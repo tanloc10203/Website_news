@@ -38,12 +38,19 @@ export default defineComponent({
       <v-card-title>
         <span>
           Tác giả:
-          {{ !item.user_id.full_name ? "Ẩn danh" : item.user_id.full_name }} -
+          {{
+            item.user_id && !item.user_id.full_name
+              ? "Ẩn danh"
+              : item.user_id.full_name
+          }}
+          -
         </span>
         <span class="text-caption">{{ timeStamp }}</span>
       </v-card-title>
 
-      <v-card-subtitle v-html="item.detail_html" />
+      <v-card-subtitle>
+        {{ item.detail_text }}
+      </v-card-subtitle>
 
       <v-card-actions>
         <v-chip class="ma-2" color="green" text-color="white">
@@ -52,7 +59,12 @@ export default defineComponent({
 
         <v-spacer></v-spacer>
 
-        <v-btn append-icon="mdi-vuetify" variant="outlined" color="error">
+        <v-btn
+          :to="`/post/${item.slug}`"
+          append-icon="mdi-vuetify"
+          variant="outlined"
+          color="error"
+        >
           Đọc thêm
         </v-btn>
       </v-card-actions>

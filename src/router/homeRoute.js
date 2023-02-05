@@ -29,6 +29,15 @@ const homeRouteConfig = [
         },
       },
       {
+        path: "post/:slug",
+        name: "post.slug",
+        components: {
+          default: () =>
+            import(/* webpackChunkName: "PostSlug" */ "../views/PostSlug.vue"),
+          sidebar: Sidebar,
+        },
+      },
+      {
         path: "login",
         children: [
           {

@@ -7,6 +7,8 @@ export function convertToSlug(Text) {
 }
 
 export function emptyObject(obj) {
+  if (!obj || obj === undefined) return false;
+
   return Object.keys(obj).length === 0;
 }
 

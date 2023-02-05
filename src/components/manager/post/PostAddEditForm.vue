@@ -35,6 +35,7 @@ export default defineComponent({
     const categoryId = ref("");
     const editorData = ref("");
     const categorySubId = ref("");
+    const detailText = ref("");
     const loading = ref(false);
 
     const image = ref(undefined);
@@ -42,6 +43,7 @@ export default defineComponent({
 
     let errors = {};
     const max = 200;
+    const countDetailText = 400;
     const ruleTitle = [
       (v) => !!v || "Tên tiêu đề là trường bắt buộc",
       (v) =>
@@ -58,6 +60,13 @@ export default defineComponent({
         );
       },
     ];
+    const ruleDetailText = [
+      (v) => !!v || "Tên tiêu đề là trường bắt buộc",
+      (v) =>
+        (v && v.length <= countDetailText) ||
+        `Giới thiệu không vượt quá ${countDetailText} kí tự`,
+      (v) => (v && v.length >= 30) || `Ít nhất ít nhất ${30} kí tự`,
+    ];
     const URL = computed(() => process.env.VUE_APP_ENDPOINT_URL);
 
     watch(
@@ -68,6 +77,7 @@ export default defineComponent({
           slug.value = slugify(post.title, { locale: "vi" });
           imageUrl.value = `${URL.value}/${post.image_title}`;
           editorData.value = post.detail_html;
+          detailText.value = post.detail_text;
 
           if (post?.category_id.parent_id) {
             categoryId.value = post?.category_id.parent_id;
@@ -87,14 +97,16 @@ export default defineComponent({
     );
 
     watch(
-      [categoryId, title, editorData],
-      ([categoryId, titleNew, editorData]) => {
+      [categoryId, title, editorData, detailText],
+      ([categoryId, titleNew, editorData, detailText]) => {
         !categoryId ? (errors["categoryId"] = true) : (errors = {});
 
         slug.value = slugify(titleNew, { locale: "vi" });
         titleNew.length >= max ? (errors["title"] = true) : (errors = {});
 
         !editorData ? (errors["editorData"] = true) : (errors = {});
+
+        !detailText ? (errors["detailText"] = true) : (errors = {});
       }
     );
 
@@ -130,6 +142,7 @@ export default defineComponent({
           categoryId: categoryId.value,
           userId: user.value._id,
           detail_html: editorData.value,
+          detail_text: detailText.value,
         };
 
         if (image.value) {
@@ -160,7 +173,6 @@ export default defineComponent({
             })
             .catch((_) => (loading.value = false));
         } else {
-          console.log(data);
           store
             .dispatch("post/fetchUpdatePost", {
               id: props.postSelected._id,
@@ -216,6 +228,9 @@ export default defineComponent({
     };
 
     return {
+      ruleDetailText,
+      countDetailText,
+      detailText,
       title,
       ruleTitle,
       max,
@@ -259,6 +274,16 @@ export default defineComponent({
           type="text"
           label="Slug danh mục"
           disabled
+        />
+      </v-col>
+
+      <v-col cols="12">
+        <v-text-field
+          :rules="ruleDetailText"
+          :counter="countDetailText"
+          v-model="detailText"
+          type="text"
+          label="Giới thiệu"
         />
       </v-col>
 
@@ -322,6 +347,7 @@ export default defineComponent({
             !categoryId ||
             !editorData ||
             !imageUrl ||
+            !detailText ||
             (isExistCategorySub && !categorySubId) ||
             loading
           "
