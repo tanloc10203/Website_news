@@ -15,6 +15,8 @@ export default defineComponent({
     const pagination = computed(() => store.state["post"].pagination);
 
     onMounted(() => {
+      if (filters.value.page >= pagination.value.totalRows) return;
+
       store.dispatch("post/fetchAllPost", {
         ...filters.value,
         limit: 2,
