@@ -4,6 +4,7 @@ const AuthMiddleware = require("../middlewares/auth.middleware");
 const router = Router();
 
 router.get("/verify/:email", authController.verifyAccount);
+router.post("/resend-verify-account", authController.resendVerifyAccount);
 router.post("/sign-up", authController.signUp);
 router.post("/sign-in", authController.signIn);
 router.get(

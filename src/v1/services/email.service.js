@@ -52,6 +52,9 @@ async function sendEmailVerifyAccount(dataSend, options) {
         status: 201,
         errors: null,
         elements: dataSend.data,
+        meta: {
+          message: "Gửi e-mail thành công!",
+        },
       };
     }
   } catch (error) {

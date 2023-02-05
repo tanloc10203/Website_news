@@ -15,7 +15,7 @@ const EXPIRED_ACCESS_TOKEN = process.env.EXPIRED_ACCESS_TOKEN;
 const EXPIRED_REFRESH_TOKEN = process.env.EXPIRED_REFRESH_TOKEN;
 
 class AuthService extends ParentService {
-  signUp = ({ email, password }) => {
+  signUp = ({ email, password, full_name }) => {
     return new Promise(async (resolve, reject) => {
       try {
         const checkEmail = await validateEmail(email);
@@ -41,14 +41,18 @@ class AuthService extends ParentService {
 
         const hashPassword = await this.model.hashPassword(password);
 
-        const response = await this.create({ email, password: hashPassword });
+        const response = await this.create({
+          email,
+          password: hashPassword,
+          full_name,
+        });
 
         // create token and save token
         const { token } = await TokenService.create({
           user_id: response.elements._id,
         });
 
-        const URL_REDIRECT = `${URI_SERVER}api/v1/auth/verify/${email}?token=${token}`;
+        const URL_REDIRECT = `${process.env.URL_CLIENT}/confirm/account/${email}?token=${token}`;
 
         const dataSend = {
           data: response.elements,
@@ -368,6 +372,66 @@ class AuthService extends ParentService {
             message: "Tạo lại key đăng nhập thành công.",
           },
         });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  resendVerifyAccount = ({ email }) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const findUser = await this.model
+          .findOne({ email, is_delete: false })
+          .exec();
+
+        if (!findUser) {
+          return resolve({
+            errors: {
+              message:
+                "Chúng tôi khổng thể tìm thấy người dùng có email này. Hãy chắc chắn rằng Email của bạn là chính xác!",
+            },
+            status: 404,
+            elements: null,
+          });
+        }
+
+        if (findUser.is_verified) {
+          return resolve({
+            status: 200,
+            elements: {},
+            errors: null,
+            meta: {
+              message:
+                "Tài khoản của bạn đã được xác thực. Vui lòng đăng nhập!",
+            },
+          });
+        }
+
+        // create token and save token
+        const { token } = await TokenService.create({
+          user_id: findUser._id,
+        });
+
+        const URL_REDIRECT = `${process.env.URL_CLIENT}/confirm/account/${email}?token=${token}`;
+
+        const dataSend = {
+          data: {},
+          sendToEmail: email,
+          urlVerify: URL_REDIRECT,
+        };
+
+        const options = {
+          subject: "Xác thực tài khoản",
+          handleHtmlLang: handleHtmlLang(dataSend),
+        };
+
+        const sendEmailResponse = await sendEmailVerifyAccount(
+          dataSend,
+          options
+        );
+
+        resolve(sendEmailResponse);
       } catch (error) {
         reject(error);
       }
