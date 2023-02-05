@@ -6,6 +6,10 @@ GET {{url}}
 ### Get by id
 GET {{url}}/63c7f290f6f55822483ed50e
 
+
+### Get by slug
+GET {{url}}/slug/Them-bai-viet-cong-nghe
+
 ### Create post
 POST {{url}}
 Content-Type: application/json
