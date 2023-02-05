@@ -14,13 +14,34 @@ export default defineComponent({
     const { email } = route.params;
     const { token } = route.query;
     const message = ref("");
+    const open = ref(false);
 
     const verifyAccount = async ({ email, token }) => {
       try {
-        const response = await authApi.verifyAccount({ email, token });
-        console.log(response);
+        loading.value = true;
+        await authApi.verifyAccount({ email, token });
+        loading.value = false;
       } catch (error) {
-        console.log("verifyAccount error :::", error);
+        loading.value = false;
+        if (error.response) {
+          message.value = error.response.data.errors.message;
+        }
+      }
+    };
+
+    const handleResendEmail = async () => {
+      try {
+        if (email) {
+          loading.value = true;
+          const response = await authApi.resendEmail({ email });
+          if (response) {
+            loading.value = false;
+            open.value = true;
+          }
+        }
+      } catch (error) {
+        loading.value = false;
+        console.log("resendEmail error :::", error);
         if (error.response) {
           message.value = error.response.data.errors.message;
         }
@@ -36,6 +57,8 @@ export default defineComponent({
     return {
       loading,
       message,
+      open,
+      handleResendEmail,
     };
   },
 });
@@ -45,12 +68,20 @@ export default defineComponent({
   <v-row justify="center" align="center" style="min-height: 80vh">
     <v-col cols="6" align-self="center">
       <v-sheet class="pa-2 ma-2">
+        <v-alert
+          v-if="open"
+          class="mb-5"
+          type="success"
+          title="Gửi mail"
+          text="Gửi lại email thành công vui lòng kiểm tra và xác nhận."
+        />
+
         <div v-if="!message">
           <v-alert type="success" variant="outlined">
             <template v-slot:title> Xác thực tài khoản thành công. </template>
           </v-alert>
 
-          <v-btn class="mt-5">Đăng nhập</v-btn>
+          <v-btn to="/login" class="mt-5">Đăng nhập</v-btn>
         </div>
 
         <div v-else>
@@ -62,7 +93,7 @@ export default defineComponent({
             {{ message }}
           </v-alert>
 
-          <v-btn class="mt-5">Gửi lại</v-btn>
+          <v-btn class="mt-5" @click="handleResendEmail">Gửi lại</v-btn>
         </div>
 
         <overlay-custom-component :open="loading" />

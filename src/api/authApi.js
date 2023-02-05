@@ -32,6 +32,9 @@ const authApi = {
   verifyAccount: async ({ email, token }) => {
     return await instance.get(nameModel + `/verify/${email}?token=${token}`);
   },
+  resendEmail: async (data) => {
+    return await instance.post(nameModel + `/resend-verify-account`, data);
+  },
 };
 
 export default authApi;
