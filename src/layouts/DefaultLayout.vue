@@ -84,17 +84,18 @@ export default defineComponent({
       >
       </v-btn>
 
-      <router-link v-if="isHome" class="text-decoration-none" to="/manager">
-        <v-btn variant="flat">Quản trị bài viết</v-btn>
-      </router-link>
+      <div v-if="isHome">
+        <v-btn v-if="user" to="/manager" variant="flat">
+          Quản trị bài viết
+        </v-btn>
+
+        <v-btn v-if="!user" to="/login" variant="flat">Đăng nhập</v-btn>
+        <v-btn v-if="!user" to="/register" variant="flat">Đăng kí</v-btn>
+      </div>
 
       <v-btn v-else-if="user" variant="flat" @click="handleLogout">
         Đăng xuất
       </v-btn>
-
-      <router-link v-else class="text-decoration-none" to="/login">
-        <v-btn variant="flat">Đăng nhập</v-btn>
-      </router-link>
     </v-app-bar>
 
     <router-view name="sidebar" :drawer="drawer" />

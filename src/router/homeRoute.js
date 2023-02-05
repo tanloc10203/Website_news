@@ -53,6 +53,19 @@ const homeRouteConfig = [
           },
         ],
       },
+      {
+        path: "register",
+        children: [
+          {
+            path: "",
+            name: "register",
+            component: () =>
+              import(
+                /* webpackChunkName: "Register" */ "../components/Register.vue"
+              ),
+          },
+        ],
+      },
     ],
   },
 ];

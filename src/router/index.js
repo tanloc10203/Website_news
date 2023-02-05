@@ -1,5 +1,6 @@
 import store from "@/store";
 import { createRouter, createWebHistory } from "vue-router";
+import confirmRoute from "./confirmRoute";
 import homeRouteConfig from "./homeRoute";
 import managerRouteConfig from "./managerRoute";
 import notfoundRouteConfig from "./notFoundRoute";
@@ -10,6 +11,7 @@ const routes = [
   ...managerRouteConfig,
   ...passwordRouteConfig,
   ...notfoundRouteConfig,
+  ...confirmRoute,
 ];
 
 const router = createRouter({

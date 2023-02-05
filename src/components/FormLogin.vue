@@ -62,6 +62,8 @@ function handleSubmit() {
     <v-text-field v-model="password" type="password" label="Mật khẩu" />
 
     <router-link to="/password/forgot"> Quên mật khẩu </router-link>
+    <v-spacer></v-spacer>
+    <router-link to="/register">Đăng ký tài khoản</router-link>
 
     <v-btn
       type="submit"
