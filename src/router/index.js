@@ -1,203 +1,15 @@
 import store from "@/store";
 import { createRouter, createWebHistory } from "vue-router";
+import homeRouteConfig from "./homeRoute";
+import managerRouteConfig from "./managerRoute";
+import notfoundRouteConfig from "./notFoundRoute";
+import passwordRouteConfig from "./passwordRoute";
 
 const routes = [
-  {
-    path: "/",
-    component: () =>
-      import(
-        /* webpackChunkName: "DefaultLayout" */ "../layouts/DefaultLayout.vue"
-      ),
-    children: [
-      {
-        path: "",
-        name: "home",
-        component: () =>
-          import(/* webpackChunkName: "HomView" */ "../views/HomeView.vue"),
-      },
-      {
-        path: "category/:slug",
-        name: "category.slug",
-        component: () =>
-          import(
-            /* webpackChunkName: "CategorySlug" */ "../views/CategorySlug.vue"
-          ),
-      },
-      {
-        path: "about",
-        name: "about",
-        component: () =>
-          import(/* webpackChunkName: "AboutView" */ "../views/AboutView.vue"),
-      },
-      {
-        path: "login",
-
-        children: [
-          {
-            path: "",
-            name: "login",
-            component: () =>
-              import(
-                /* webpackChunkName: "FormLogin" */ "../components/FormLogin.vue"
-              ),
-            meta: {
-              auth: true,
-            },
-          },
-        ],
-      },
-      {
-        path: "/manager",
-        redirect: { name: "dashboard" },
-        children: [
-          {
-            path: "dashboard",
-            name: "dashboard",
-            component: () =>
-              import(
-                /* webpackChunkName: "Dashboard" */ "../pages/manager/Dashboard.vue"
-              ),
-            meta: {
-              auth: true, // * Kiểm tra xem người dùng có đăng nhập chưa
-            },
-          },
-          {
-            path: "category",
-            children: [
-              {
-                path: "",
-                name: "category",
-                component: () =>
-                  import(
-                    /* webpackChunkName: "Category" */ "../pages/manager/Category/Category.vue"
-                  ),
-                meta: {
-                  auth: true,
-                },
-              },
-              {
-                path: "add",
-                name: "add-category",
-                component: () =>
-                  import(
-                    /* webpackChunkName: "AddCategory" */ "../pages/manager/Category/CategoryAddEdit.vue"
-                  ),
-                meta: {
-                  auth: true,
-                },
-              },
-              {
-                path: "add/children/:parentId",
-                name: "add-children-category",
-                component: () =>
-                  import(
-                    /* webpackChunkName: "AddCategory" */ "../pages/manager/Category/CategoryAddEdit.vue"
-                  ),
-                meta: {
-                  auth: true,
-                },
-              },
-              {
-                path: "update/:categoryId",
-                name: "update-category",
-                component: () =>
-                  import(
-                    /* webpackChunkName: "UpdateCategory" */ "../pages/manager/Category/CategoryAddEdit.vue"
-                  ),
-                meta: {
-                  auth: true,
-                },
-              },
-            ],
-          },
-          {
-            path: "post",
-            children: [
-              {
-                path: "",
-                name: "post",
-                component: () =>
-                  import(
-                    /* webpackChunkName: "Post" */ "../pages/manager/Post/Post.vue"
-                  ),
-                meta: {
-                  auth: true,
-                },
-              },
-              {
-                path: "add",
-                name: "add-post",
-                component: () =>
-                  import(
-                    /* webpackChunkName: "Post Add" */ "../pages/manager/Post/PostAddEdit.vue"
-                  ),
-                meta: {
-                  auth: true,
-                },
-              },
-              {
-                path: "update/:id",
-                name: "update-post",
-                component: () =>
-                  import(
-                    /* webpackChunkName: "Post Update" */ "../pages/manager/Post/PostAddEdit.vue"
-                  ),
-                meta: {
-                  auth: true,
-                },
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    path: "/password",
-    component: () =>
-      import(
-        /* webpackChunkName: "LoginLayout" */ "../layouts/LoginLayout.vue"
-      ),
-    children: [
-      {
-        path: "forgot",
-        name: "forgot-password",
-        component: () =>
-          import(
-            /* webpackChunkName: "ForgotPassword" */ "../views/ForgotPassword.vue"
-          ),
-      },
-      {
-        path: "change/:email",
-        name: "change-password",
-        component: () =>
-          import(
-            /* webpackChunkName: "ForgotPassword" */ "../views/ChangePassword.vue"
-          ),
-      },
-    ],
-  },
-  {
-    path: "/404",
-    component: () =>
-      import(
-        /* webpackChunkName: "NotFoundLayout" */ "../layouts/NotFoundLayout.vue"
-      ),
-    children: [
-      {
-        path: "",
-        name: "notfound",
-        component: () =>
-          import(
-            /* webpackChunkName: "NotFoundView" */ "../views/NotFoundView.vue"
-          ),
-      },
-    ],
-  },
-  {
-    path: "/:pathMatch(.*)*",
-    redirect: { name: "notfound" },
-  },
+  ...homeRouteConfig,
+  ...managerRouteConfig,
+  ...passwordRouteConfig,
+  ...notfoundRouteConfig,
 ];
 
 const router = createRouter({
@@ -207,6 +19,17 @@ const router = createRouter({
 
 router.beforeEach(async (to, form, next) => {
   if (to.meta?.auth) {
+    store.dispatch("auth/getCurrentUserLogin").catch(async (error) => {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.errors &&
+        error.response.data.errors.message !== "jwt expired"
+      ) {
+        await handleLogout();
+      }
+    });
+
     const isLoggedIn = store.getters["auth/isLoggedIn"];
 
     if (to.path !== "/login" && !isLoggedIn) {
