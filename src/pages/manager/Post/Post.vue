@@ -3,9 +3,11 @@ import {
   computed,
   defineComponent,
   onBeforeMount,
+  onBeforeUnmount,
   ref,
 } from "@vue/runtime-core";
 import { useStore } from "vuex";
+import { emptyObject } from "../../../utils/functions";
 
 export default defineComponent({
   setup() {
@@ -19,9 +21,26 @@ export default defineComponent({
     const pagination = computed(() => store.state["post"].pagination);
     const isLoading = computed(() => store.state["post"].isLoading);
     const URL = computed(() => process.env.VUE_APP_ENDPOINT_URL);
+    const user = computed(
+      () => !emptyObject(store.state["auth"].user) && store.state["auth"].user
+    );
+
+    const fetchAllPost = (filters) => {
+      if (user.value?.role.toLowerCase() !== "admin")
+        filters = {
+          ...filters,
+          where: "user_id," + user.value._id,
+        };
+
+      store.dispatch("post/fetchAllPost", filters);
+    };
+
+    onBeforeUnmount(() => {
+      store.dispatch("post/reset");
+    });
 
     onBeforeMount(() => {
-      store.dispatch("post/fetchAllPost", {
+      fetchAllPost({
         ...filters.value,
         page: 1,
         limit: 10,
@@ -29,7 +48,7 @@ export default defineComponent({
     });
 
     const onChangePage = (value) => {
-      store.dispatch("post/fetchAllPost", {
+      fetchAllPost({
         ...filters.value,
         page: value,
       });
@@ -94,7 +113,7 @@ export default defineComponent({
               <th class="text-left">Hành động</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody v-if="posts.length">
             <tr v-for="post in posts" :key="post._id">
               <td>
                 <v-row no-gutters>
@@ -155,6 +174,8 @@ export default defineComponent({
               </td>
             </tr>
           </tbody>
+
+          <p v-else>Bạn chưa có bài viết nào</p>
         </v-table>
       </div>
 

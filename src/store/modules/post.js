@@ -39,7 +39,8 @@ const mutations = {
   },
   FETCH_ALL_HOME_SUCCESS: (state, payload) => {
     state.isLoading = false;
-    state.posts.push(...payload.elements);
+    const elements = payload.elements;
+    state.posts.push(...elements);
     state.pagination = payload.meta.pagination;
     state.filters = {
       ...state.filters,
@@ -51,6 +52,19 @@ const mutations = {
       ...state.filters,
       ...payload,
     };
+  },
+  RESET_VALUE: (state) => {
+    state.filters = {
+      page: 1,
+      limit: 5,
+      where: "",
+    };
+    state.pagination = {
+      page: 1,
+      limit: 5,
+      totalRows: 5,
+    };
+    state.posts = [];
   },
 };
 
@@ -99,11 +113,16 @@ const actions = {
   fetchAllPost: async ({ commit, dispatch }, payload) => {
     try {
       commit("FETCH_START");
+      commit("SET_FILTER", {
+        page: payload.page,
+        limit: payload.limit,
+        where: payload.where,
+      });
 
       const response = await postApi.getAll(payload);
 
       if (response && response.elements) {
-        if (payload.isHome) {
+        if (payload?.isHome) {
           commit("FETCH_ALL_HOME_SUCCESS", response);
         } else {
           commit("FETCH_ALL_SUCCESS", response);
@@ -192,6 +211,9 @@ const actions = {
   changeFilter: ({ commit }, payload) => {
     commit("SET_FILTER", payload);
   },
+  reset({ commit }) {
+    commit("RESET_VALUE");
+  },
 };
 
 const getters = {
@@ -202,7 +224,7 @@ const getters = {
         createdAt: moment(post.createdAt).format("YYYY-MM-DD h:mm A"),
       }));
     }
-    return;
+    return [];
   },
 };
 

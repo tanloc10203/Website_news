@@ -17,6 +17,9 @@ const postApi = {
   getBySlug: async (slug) => {
     return await instance.get(`${nameModel}/slug/${slug}`);
   },
+  getByUserId: async (userId) => {
+    return await instance.get(`${nameModel}/user/${userId}`);
+  },
   update: async ({ id, data }) => {
     return await instance.patch(`${nameModel}/${id}`, data);
   },

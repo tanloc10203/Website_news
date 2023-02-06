@@ -18,6 +18,10 @@ export default defineComponent({
       emptyObject(store.state.auth.user) ? null : store.state.auth.user
     );
 
+    const accessToken = computed(() =>
+      localStorage.getItem("accessToken") ? true : false
+    );
+
     const isHome = computed(() => (!route.meta?.auth ? true : false));
 
     const handleLogout = async () => {
@@ -54,6 +58,7 @@ export default defineComponent({
     return {
       onClick,
       handleLogout,
+      accessToken,
       theme,
       drawer,
       user,
@@ -84,16 +89,16 @@ export default defineComponent({
       >
       </v-btn>
 
-      <div v-if="isHome">
-        <v-btn v-if="user" to="/manager" variant="flat">
-          Quản trị bài viết
-        </v-btn>
+      <v-btn v-if="isHome && accessToken" to="/manager" variant="flat">
+        Quản trị 
+      </v-btn>
 
-        <v-btn v-if="!user" to="/login" variant="flat">Đăng nhập</v-btn>
-        <v-btn v-if="!user" to="/register" variant="flat">Đăng kí</v-btn>
+      <div v-else-if="!accessToken">
+        <v-btn to="/login" variant="flat">Đăng nhập</v-btn>
+        <v-btn to="/register" variant="flat">Đăng kí</v-btn>
       </div>
 
-      <v-btn v-else-if="user" variant="flat" @click="handleLogout">
+      <v-btn v-if="user" variant="flat" @click="handleLogout">
         Đăng xuất
       </v-btn>
     </v-app-bar>

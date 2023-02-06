@@ -1,11 +1,13 @@
 <script>
-import { computed, defineComponent, onMounted } from "@vue/runtime-core";
+import { computed, defineComponent, onBeforeMount } from "@vue/runtime-core";
 import { useStore } from "vuex";
 import CardHomeItem from "./CardHomeItem.vue";
+import OverlayCustom from "./OverlayCustom.vue";
 
 export default defineComponent({
   components: {
     CardHomeItem,
+    OverlayCustom,
   },
   setup() {
     const store = useStore();
@@ -13,14 +15,24 @@ export default defineComponent({
     const posts = computed(() => store.state["post"].posts);
     const filters = computed(() => store.state["post"].filters);
     const pagination = computed(() => store.state["post"].pagination);
+    const loading = computed(() => store.state["post"].isLoading);
 
-    onMounted(() => {
-      if (filters.value.page >= pagination.value.totalRows) return;
+    const fetchAllPost = ({ filters, page, totalRows }) => {
+      if (page >= totalRows) return;
 
-      store.dispatch("post/fetchAllPost", {
-        ...filters.value,
-        limit: 2,
-        isHome: true,
+      store.dispatch("post/fetchAllPost", filters);
+    };
+
+    onBeforeMount(() => {
+      fetchAllPost({
+        filters: {
+          ...filters.value,
+          where: "",
+          limit: 2,
+          isHome: true,
+        },
+        page: filters.value.page,
+        totalRows: pagination.value.totalRows,
       });
     });
 
@@ -43,6 +55,7 @@ export default defineComponent({
 
     return {
       posts,
+      loading,
       visibilityChanged,
     };
   },
@@ -50,14 +63,22 @@ export default defineComponent({
 </script>
 
 <template>
-  <v-card class="mx-auto">
-    <v-card-title class="text-h4">Danh sách bài viết</v-card-title>
-    <v-container>
-      <v-row dense>
-        <card-home-item v-for="post in posts" :key="post._id" :item="post" />
+  <div>
+    <v-card class="mx-auto">
+      <v-card-title class="text-h4">Danh sách bài viết</v-card-title>
 
-        <div v-if="posts.length" v-observe-visibility="visibilityChanged"></div>
-      </v-row>
-    </v-container>
-  </v-card>
+      <overlay-custom :open="loading" />
+
+      <v-container>
+        <v-row dense>
+          <card-home-item v-for="post in posts" :key="post._id" :item="post" />
+
+          <div
+            v-if="posts.length"
+            v-observe-visibility="visibilityChanged"
+          ></div>
+        </v-row>
+      </v-container>
+    </v-card>
+  </div>
 </template>
