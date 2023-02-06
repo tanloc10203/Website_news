@@ -137,6 +137,58 @@ class CategoryService extends ParentService {
     }
     return categoryList;
   };
+
+  getBySlug = async (slug) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const findCategory = await this.model
+          .findOne({
+            slug,
+            is_delete: false,
+          })
+          .select("name slug level")
+          .exec();
+
+        if (!findCategory) {
+          return resolve({
+            errors: {
+              message: `Danh mục với slug là ${slug} không tồn tại`,
+            },
+            status: 404,
+          });
+        }
+
+        let children = [];
+        let result = {
+          ...findCategory._doc,
+          childrens: [],
+        };
+
+        if (findCategory.level === 1) {
+          const { elements } = await this.getByParentId(findCategory._id);
+          children = [...elements];
+        }
+
+        if (children.length > 0) {
+          result = {
+            ...result,
+            childrens: [...children],
+          };
+        }
+
+        resolve({
+          errors: null,
+          elements: result,
+          status: 200,
+          meta: {
+            message: "Get category by slug success",
+          },
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
 }
 
 module.exports = CategoryService;

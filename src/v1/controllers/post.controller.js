@@ -56,6 +56,18 @@ class PostController extends ParentController {
       next(error);
     }
   };
+
+  getPostByUserId = async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+
+      const response = await this.service.getPostByUserId(userId);
+
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = new PostController();

@@ -53,6 +53,15 @@ class CategoryController extends ParentController {
       next(error);
     }
   };
+
+  getBySlug = async (req, res, next) => {
+    try {
+      const response = await this.service.getBySlug(req.params.slug);
+      res.status(response.status).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = new CategoryController();

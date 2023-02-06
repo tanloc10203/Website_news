@@ -19,7 +19,17 @@ class ParentService {
 
         where ? (where = where.split(",")) : (where = [where]);
 
-        where[1] && (whereBy[where[0]] = where[1]);
+        if (where[1] && where[1].search(";") !== -1) {
+          where[1] = where[1].split(";");
+        }
+
+        if (where[1] && Array.isArray(where[1])) {
+          whereBy[where[0]] = {
+            $in: where[1],
+          };
+        } else {
+          where[1] && (whereBy[where[0]] = where[1]);
+        }
 
         if (where) {
           options = {

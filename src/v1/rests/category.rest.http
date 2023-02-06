@@ -37,3 +37,6 @@ Content-Type: application/json
   "name": "Công nghệ",
   "level": 4
 }
+
+### Get by slug
+GET {{url}}/slug/Cong-nghe

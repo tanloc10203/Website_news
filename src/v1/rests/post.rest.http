@@ -1,7 +1,7 @@
 @url = http://localhost:5000/api/v1/post
 
 ### Get all post
-GET {{url}}
+GET {{url}}?where=category_id,63c7d97f855f5cfe24a43bfb;63d78d61c544b9446b55120d
 
 ### Get by id
 GET {{url}}/63c7f290f6f55822483ed50e
@@ -38,3 +38,6 @@ DELETE  {{url}}/63c7f290f6f55822483ed50e?is_delete=false
 
 ### Delete vĩnh viễn role
 DELETE  {{url}}/force/63bfd7d4414c6a96d3b584fb
+
+### get post by user id
+GET {{url}}/user/63df9e6ee8a64789ec19f6e1

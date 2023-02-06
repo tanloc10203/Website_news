@@ -134,6 +134,45 @@ class PostService extends ParentService {
       }
     });
   };
+
+  getPostByUserId = (userId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await this.model
+          .find({
+            user_id: userId,
+            is_delete: false,
+          })
+          .populate({
+            path: "user_id",
+            select: "full_name -_id",
+          })
+          .populate("category_id")
+          .exec();
+
+        if (!response) {
+          return resolve({
+            errors: {
+              message: "Không có dữ liệu được tìm thấy",
+            },
+            status: 404,
+            elements: [],
+          });
+        }
+
+        resolve({
+          errors: null,
+          status: 200,
+          elements: response,
+          meta: {
+            message: "Lây bài viết thành công.",
+          },
+        });
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
 }
 
 module.exports = PostService;
