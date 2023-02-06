@@ -61,7 +61,7 @@ export default defineComponent({
 
         <v-btn
           :to="`/post/${item.slug}`"
-          append-icon="mdi-vuetify"
+          append-icon="mdi-arrow-right-box"
           variant="outlined"
           color="error"
         >
